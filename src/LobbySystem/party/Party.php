@@ -10,6 +10,7 @@ use LobbySystem\packets\party\info\InvitePacket;
 use LobbySystem\packets\party\info\PartyJoinPacket;
 use LobbySystem\packets\party\info\PromotePacket;
 use LobbySystem\packets\party\info\PartyQuitPacket;
+use LobbySystem\utils\StarGateUtil;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\TaskHandler;
 
@@ -20,15 +21,15 @@ class Party
 	 */
 	private $owner;
 	/**
-	 * @var string[]
+	 * @var array<string, string>
 	 */
 	private $moderators = [];
 	/**
-	 * @var string[]
+	 * @var array<string, string>
 	 */
 	private $members = [];
 	/**
-	 * @var array
+	 * @var array<string, string>
 	 */
 	private $invites = [];
 	/**
@@ -53,14 +54,14 @@ class Party
 		$info = new PartyJoinPacket();
 		$info->player = $player;
 		$info->party = $this->getContents();
-		StarGateAtlantis::getInstance()->forwardPacket("all", "default", $info);
+		StarGateUtil::distribute($info);
 		$this->members[$player] = $player;
 		unset($this->invites[$player]);
 	}
 
 	/**
 	 * @param string $player
-	 * @param bool $isKick
+	 * @param bool   $isKick
 	 */
 	public function remove(string $player, bool $isKick = true): void
 	{
@@ -72,9 +73,9 @@ class Party
 			if ($this->moderators !== []) {
 				$this->promote(array_rand($this->moderators));
 			} else {
-				$player = (string) array_rand($this->members);
-				$this->promote($player);
-				$this->promote($player);
+				$p = array_rand($this->members);
+				$this->promote($p);
+				$this->promote($p);
 			}
 		}
 		unset($this->members[$player], $this->moderators[$player], $this->offline[$player]);
@@ -82,7 +83,7 @@ class Party
 		$info->player = $player;
 		$info->kick = $isKick;
 		$info->party = $this->getContents();
-		StarGateAtlantis::getInstance()->forwardPacket("all", "default", $info);
+		StarGateUtil::distribute($info);
 	}
 
 	/**
@@ -97,7 +98,7 @@ class Party
 			$info->player = $player;
 			$info->moderator = true;
 			$info->party = $this->getContents();
-			StarGateAtlantis::getInstance()->forwardPacket("all", "default", $info);
+			StarGateUtil::distribute($info);
 		} elseif (isset($this->moderators[$player])) {
 			PartyManager::remove($this);
 			$this->moderators[$this->owner] = $this->owner;
@@ -108,7 +109,7 @@ class Party
 			$info->player = $player;
 			$info->moderator = false;
 			$info->party = $this->getContents();
-			StarGateAtlantis::getInstance()->forwardPacket("all", "default", $info);
+			StarGateUtil::distribute($info);
 		}
 	}
 
@@ -117,12 +118,11 @@ class Party
 		PartyManager::remove($this);
 		$info = new DisbandPacket();
 		$info->party = $this->getContents();
-		StarGateAtlantis::getInstance()->forwardPacket("all", "default", $info);
+		StarGateUtil::distribute($info);
 	}
 
 	/**
 	 * @param string $player
-	 * @noinspection PhpUnusedParameterInspection
 	 */
 	public function invite(string $player): void
 	{
@@ -131,16 +131,16 @@ class Party
 		$info = new InvitePacket();
 		$info->player = $player;
 		$info->party = $this->getContents();
-		StarGateAtlantis::getInstance()->forwardPacket("all", "default", $info);
-		Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($player) : void {
+		StarGateUtil::distribute($info);
+		Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($player): void {
 			if (isset($this->invites[$player])) {
 				unset($this->invites[$player]);
 				$info = new InviteExpirePacket();
 				$info->player = $player;
 				$info->party = $this->getContents();
-				StarGateAtlantis::getInstance()->forwardPacket("all", "default", $info);
+				StarGateUtil::distribute($info);
 			}
-			if(!$this->isValid() && count($this->invites) < 1){
+			if (!$this->isValid() && count($this->invites) < 1) {
 				PartyManager::remove($this);
 			}
 		}), 20 * 60);
