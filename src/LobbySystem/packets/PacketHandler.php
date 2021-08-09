@@ -89,11 +89,6 @@ class PacketHandler implements Listener
 			case PacketPool::SERVER_ENABLE:
 				/** @var EnablePacket $packet */
 				Output::important(Server::getInstance()->getOnlinePlayers(), "enable");
-				foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-					$player = new PlayerPacket();
-					$player->player = $p->getName();
-					StarGateUtil::request($player);
-				}
 				break;
 			case PacketPool::SERVER_DISABLE:
 				/** @var DisablePacket $packet */
