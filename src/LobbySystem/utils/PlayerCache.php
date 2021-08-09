@@ -2,6 +2,10 @@
 
 namespace LobbySystem\utils;
 
+use LobbySystem\Loader;
+use LobbySystem\party\PartyManager;
+use pocketmine\scheduler\ClosureTask;
+
 class PlayerCache
 {
 	/**
@@ -10,26 +14,33 @@ class PlayerCache
 	private static $cache = [];
 
 	/**
-	 * @param string $player
+	 * @param string[] $players
 	 */
-	public static function add(string $player): void
+	public static function set(array $players): void
 	{
-		self::$cache[strtolower($player)] = $player;
-	}
-
-	/**
-	 * @param string $player
-	 */
-	public static function remove(string $player): void
-	{
-		unset(self::$cache[strtolower($player)]);
+		foreach (array_diff($players, self::$cache) as $player) {
+			if (in_array($player, $players, true)) {
+				$party = PartyManager::get($player);
+				if (isset($party->offline[$player])) {
+					$party->offline[$player]->cancel();
+					unset($party->offline[$player]);
+				}
+			} else {
+				$party = PartyManager::get($player);
+				if ($party->isValid()) {
+					$party->offline[$player] = Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(static function () use ($party, $player): void {
+						$party->remove($player);
+					}), 6000);
+				}
+			}
+		}
 	}
 
 	/**
 	 * @param string $player
 	 * @return bool
 	 */
-	public static function isKnown(string $player): bool
+	public static function isOnline(string $player): bool
 	{
 		return isset(self::$cache[strtolower($player)]);
 	}

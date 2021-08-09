@@ -48,8 +48,11 @@ class Loader extends PluginBase
 			self::$isMaster = true;
 			GamemodeManager::load();
 			QueueManager::load();
-			$this->getScheduler()->scheduleRepeatingTask(new ClosureTask(static function (): void { StarGateUtil::refreshServerList(); }), 40);
 		}
+
+		$this->getScheduler()->scheduleRepeatingTask(new ClosureTask(static function (): void {
+			StarGateUtil::refreshServerInformation();
+		}), 40);
 	}
 
 	public function onDisable(): void

@@ -76,14 +76,14 @@ class StarGateUtil
 		}
 	}
 
-	public static function refreshServerList(): void
+	public static function refreshServerInformation(): void
 	{
 		$response = StarGateAtlantis::getInstance()->serverInfo(Loader::getServerName(), true);
 		if ($response !== null) {
 			$response->whenComplete(static function ($response, Exception $e): void {
 				if ($response instanceof ServerInfoResponsePacket) {
 					self::serverListCallback($response->getServerList());
-
+					PlayerCache::set($response->getPlayerList());
 				}
 			});
 		}

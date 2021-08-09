@@ -2,7 +2,6 @@
 
 namespace LobbySystem\packets;
 
-use alemiz\sga\StarGateAtlantis;
 use Exception;
 use LobbySystem\gamemode\FreeGamemode;
 use LobbySystem\gamemode\GamemodeManager;
@@ -30,9 +29,7 @@ use LobbySystem\packets\party\request\QuitRequestPacket;
 use LobbySystem\packets\party\request\WarpRequestPacket;
 use LobbySystem\packets\server\DisablePacket;
 use LobbySystem\packets\server\EnablePacket;
-use LobbySystem\packets\server\PlayerPacket;
 use LobbySystem\packets\server\PlayPacket;
-use LobbySystem\packets\server\QuitPacket;
 use LobbySystem\packets\server\TeamPacket;
 use LobbySystem\party\PartyManager;
 use LobbySystem\queue\QueueManager;
@@ -40,8 +37,6 @@ use LobbySystem\utils\Output;
 use LobbySystem\utils\PlayerCache;
 use LobbySystem\utils\StarGateUtil;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -54,10 +49,8 @@ class PacketHandler implements Listener
 			[
 				new EnablePacket(),
 				new DisablePacket(),
-				new PlayerPacket(),
 				new PlayPacket(),
 				new TeamPacket(),
-				new QuitPacket(),
 				new InviteRequestPacket(),
 				new InviteExpirePacket(),
 				new InvitePacket(),
@@ -106,17 +99,6 @@ class PacketHandler implements Listener
 				/** @var DisablePacket $packet */
 				Output::important(Server::getInstance()->getOnlinePlayers(), "disable");
 				break;
-			case PacketPool::SERVER_PLAYER:
-				/** @var PlayerPacket $packet */
-				if (!PlayerCache::isKnown($packet->player)) {
-					PlayerCache::add($packet->player);
-					$party = PartyManager::get($packet->player);
-					if (isset($party->offline[$packet->player])) {
-						$party->offline[$packet->player]->cancel();
-						unset($party->offline[$packet->player]);
-					}
-				}
-				break;
 			case PacketPool::SERVER_PLAY:
 				/** @var PlayPacket $packet */
 				try {
@@ -131,21 +113,11 @@ class PacketHandler implements Listener
 					StarGateUtil::transferPlayer($packet->player, $gamemode->getId());
 				} else {
 					StarGateUtil::transferPlayer($packet->player, "lobby");
-					Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(static function (int $currentTick) use ($packet, $gamemode): void {
+					Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(static function () use ($packet, $gamemode): void {
 						if (($player = Server::getInstance()->getPlayerExact($packet->player)) instanceof Player) {
 							QueueManager::add($player, $gamemode);
 						}
 					}), 20 * 5);
-				}
-				break;
-			case PacketPool::SERVER_QUIT:
-				/** @var PartyQuitPacket $packet */
-				PlayerCache::remove($packet->player);
-				$party = PartyManager::get($packet->player);
-				if ($party->isValid()) {
-					$party->offline[$packet->player] = Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(static function (int $currnetTick) use ($party, $packet): void {
-						$party->remove($packet->player);
-					}), 6000);
 				}
 				break;
 			case PacketPool::PARTY_REQUEST_INVITE:
@@ -215,15 +187,10 @@ class PacketHandler implements Listener
 					$info->owner = $party->getOwner();
 					$info->moderators = $party->getModerators();
 					$info->members = $party->getMembers();
-					$left = $party->getSize();
 					foreach ($party->getContents() as $player) {
-						StarGateAtlantis::getInstance()->isOnline($player, static function (string $response) use (&$left, &$info, $player, $packet) {
-							$info->online[$player] = ($response !== "false");
-							if (--$left === 0) {
-								StarGateUtil::sendTo($packet->from, $info);
-							}
-						});
+						$info->online[$player] = PlayerCache::isOnline($player);
 					}
+					StarGateUtil::sendTo($packet->from, $info);
 				}
 				break;
 			case PacketPool::PARTY_INFO_LIST:
@@ -368,23 +335,5 @@ class PacketHandler implements Listener
 				return false;
 		}
 		return true;
-	}
-
-	public function onJoin(PlayerJoinEvent $event): void
-	{
-		$player = new PlayerPacket();
-		$player->player = $event->getPlayer()->getName();
-		StarGateUtil::request($player);
-	}
-
-	public function onQuit(PlayerQuitEvent $event): void
-	{
-		StarGateAtlantis::getInstance()->isOnline($event->getPlayer(), static function ($response) use ($event) {
-			if ($response === "false") {
-				$player = new QuitPacket();
-				$player->player = $event->getPlayer()->getName();
-				StarGateUtil::request($player);
-			}
-		});
 	}
 }
