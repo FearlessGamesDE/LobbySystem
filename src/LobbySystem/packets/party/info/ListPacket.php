@@ -2,8 +2,9 @@
 
 namespace LobbySystem\packets\party\info;
 
-use alemiz\sga\packets\StarGatePacket;
+use alemiz\sga\protocol\StarGatePacket;
 use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\PacketPool;
 use LobbySystem\utils\PlayerCache;
 
 class ListPacket extends StarGatePacket
@@ -29,12 +30,7 @@ class ListPacket extends StarGatePacket
 	 */
 	public $online;
 
-	public function __construct()
-	{
-		parent::__construct("PARTY_INFO_LIST", 0x129);
-	}
-
-	public function decode(): void
+	public function decodePayload(): void
 	{
 		$this->isEncoded = false;
 
@@ -50,7 +46,7 @@ class ListPacket extends StarGatePacket
 		}
 	}
 
-	public function encode(): void
+	public function encodePayload(): void
 	{
 		$convertor = new Convertor($this->getID());
 
@@ -63,5 +59,10 @@ class ListPacket extends StarGatePacket
 
 		$this->encoded = $convertor->getPacketString();
 		$this->isEncoded = true;
+	}
+
+	public function getPacketId(): int
+	{
+		return PacketPool::PARTY_INFO_LIST;
 	}
 }

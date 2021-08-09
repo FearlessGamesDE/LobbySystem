@@ -2,8 +2,9 @@
 
 namespace LobbySystem\packets\party\info;
 
-use alemiz\sga\packets\StarGatePacket;
+use alemiz\sga\protocol\StarGatePacket;
 use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\PacketPool;
 use LobbySystem\utils\PlayerCache;
 
 class NotInPartyPacket extends StarGatePacket
@@ -13,12 +14,7 @@ class NotInPartyPacket extends StarGatePacket
 	 */
 	public $player;
 
-	public function __construct()
-	{
-		parent::__construct("PARTY_INFO_NOT_IN_PARTY", 0x124);
-	}
-
-	public function decode(): void
+	public function decodePayload(): void
 	{
 		$this->isEncoded = false;
 
@@ -27,7 +23,7 @@ class NotInPartyPacket extends StarGatePacket
 		$this->player = $data[1];
 	}
 
-	public function encode(): void
+	public function encodePayload(): void
 	{
 		$convertor = new Convertor($this->getID());
 
@@ -35,5 +31,10 @@ class NotInPartyPacket extends StarGatePacket
 
 		$this->encoded = $convertor->getPacketString();
 		$this->isEncoded = true;
+	}
+
+	public function getPacketId(): int
+	{
+		return PacketPool::PARTY_INFO_NOT_IN_PARTY;
 	}
 }

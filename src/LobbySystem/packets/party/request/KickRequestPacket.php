@@ -2,9 +2,10 @@
 
 namespace LobbySystem\packets\party\request;
 
-use alemiz\sga\packets\StarGatePacket;
+use alemiz\sga\protocol\StarGatePacket;
 use alemiz\sga\StarGateAtlantis;
 use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\PacketPool;
 
 class KickRequestPacket extends StarGatePacket
 {
@@ -21,12 +22,7 @@ class KickRequestPacket extends StarGatePacket
 	 */
 	public $from;
 
-	public function __construct()
-	{
-		parent::__construct("PARTY_REQUEST_KICK", 0x131);
-	}
-
-	public function decode(): void
+	public function decodePayload(): void
 	{
 		$this->isEncoded = false;
 
@@ -37,7 +33,7 @@ class KickRequestPacket extends StarGatePacket
 		$this->from = $data[3];
 	}
 
-	public function encode(): void
+	public function encodePayload(): void
 	{
 		$convertor = new Convertor($this->getID());
 
@@ -47,5 +43,10 @@ class KickRequestPacket extends StarGatePacket
 
 		$this->encoded = $convertor->getPacketString();
 		$this->isEncoded = true;
+	}
+
+	public function getPacketId(): int
+	{
+		return PacketPool::PARTY_REQUEST_KICK;
 	}
 }

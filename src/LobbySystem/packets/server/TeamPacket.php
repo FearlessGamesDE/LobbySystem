@@ -2,8 +2,9 @@
 
 namespace LobbySystem\packets\server;
 
-use alemiz\sga\packets\StarGatePacket;
+use alemiz\sga\protocol\StarGatePacket;
 use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\PacketPool;
 
 class TeamPacket extends StarGatePacket
 {
@@ -12,12 +13,7 @@ class TeamPacket extends StarGatePacket
 	 */
 	public $team;
 
-	public function __construct()
-	{
-		parent::__construct("SERVER_TEAM", 0x115);
-	}
-
-	public function decode(): void
+	public function decodePayload(): void
 	{
 		$this->isEncoded = false;
 
@@ -26,7 +22,7 @@ class TeamPacket extends StarGatePacket
 		$this->team = array_filter(explode("#", $data[1]));
 	}
 
-	public function encode(): void
+	public function encodePayload(): void
 	{
 		$convertor = new Convertor($this->getID());
 
@@ -34,5 +30,10 @@ class TeamPacket extends StarGatePacket
 
 		$this->encoded = $convertor->getPacketString();
 		$this->isEncoded = true;
+	}
+
+	public function getPacketId(): int
+	{
+		return PacketPool::SERVER_TEAM;
 	}
 }

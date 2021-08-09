@@ -2,8 +2,9 @@
 
 namespace LobbySystem\packets\party\info;
 
-use alemiz\sga\packets\StarGatePacket;
+use alemiz\sga\protocol\StarGatePacket;
 use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\PacketPool;
 use LobbySystem\utils\PlayerCache;
 
 class NoPermissionModeratorPacket extends StarGatePacket
@@ -13,12 +14,7 @@ class NoPermissionModeratorPacket extends StarGatePacket
 	 */
 	public $player;
 
-	public function __construct()
-	{
-		parent::__construct("PARTY_INFO_NOPERMISSION_MODERATOR", 0x12A);
-	}
-
-	public function decode(): void
+	public function decodePayload(): void
 	{
 		$this->isEncoded = false;
 
@@ -27,7 +23,7 @@ class NoPermissionModeratorPacket extends StarGatePacket
 		$this->player = $data[1];
 	}
 
-	public function encode(): void
+	public function encodePayload(): void
 	{
 		$convertor = new Convertor($this->getID());
 
@@ -35,5 +31,10 @@ class NoPermissionModeratorPacket extends StarGatePacket
 
 		$this->encoded = $convertor->getPacketString();
 		$this->isEncoded = true;
+	}
+
+	public function getPacketId(): int
+	{
+		return PacketPool::PARTY_INFO_NOPERMISSION_MODERATOR;
 	}
 }

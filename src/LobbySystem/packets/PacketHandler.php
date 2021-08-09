@@ -3,7 +3,7 @@
 namespace LobbySystem\packets;
 
 use alemiz\sga\events\CustomPacketEvent;
-use alemiz\sga\packets\StarGatePacket;
+use alemiz\sga\protocol\StarGatePacket;
 use alemiz\sga\StarGateAtlantis;
 use Exception;
 use LobbySystem\gamemode\FreeGamemode;
@@ -52,36 +52,37 @@ class PacketHandler implements Listener
 {
 	public static function load(): void
 	{
-		foreach ([
-					 new EnablePacket(),
-					 new DisablePacket(),
-					 new PlayerPacket(),
-					 new PlayPacket(),
-					 new TeamPacket(),
-					 new QuitPacket(),
-					 new InviteRequestPacket(),
-					 new InviteExpirePacket(),
-					 new InvitePacket(),
-					 new NotInPartyPacket(),
-					 new InPartyPacket(),
-					 new PartyJoinPacket(),
-					 new PartyQuitPacket(),
-					 new ListRequestPacket(),
-					 new ListPacket(),
-					 new NoPermissionModeratorPacket(),
-					 new NoPermissionOwnerPacket(),
-					 new DisbandRequestPacket(),
-					 new DisbandPacket(),
-					 new QuitRequestPacket(),
-					 new PromoteRequestPacket(),
-					 new PromotePacket(),
-					 new KickRequestPacket(),
-					 new WarpRequestPacket(),
-					 new WarpPacket(),
-					 new ChatRequestPacket(),
-					 new ChatPacket()
-				 ] as $packet) {
-			StarGateUtil::getClient()->getProtocolCodec()->registerPacket($packet);
+		foreach (
+			[
+				new EnablePacket(),
+				new DisablePacket(),
+				new PlayerPacket(),
+				new PlayPacket(),
+				new TeamPacket(),
+				new QuitPacket(),
+				new InviteRequestPacket(),
+				new InviteExpirePacket(),
+				new InvitePacket(),
+				new NotInPartyPacket(),
+				new InPartyPacket(),
+				new PartyJoinPacket(),
+				new PartyQuitPacket(),
+				new ListRequestPacket(),
+				new ListPacket(),
+				new NoPermissionModeratorPacket(),
+				new NoPermissionOwnerPacket(),
+				new DisbandRequestPacket(),
+				new DisbandPacket(),
+				new QuitRequestPacket(),
+				new PromoteRequestPacket(),
+				new PromotePacket(),
+				new KickRequestPacket(),
+				new WarpRequestPacket(),
+				new WarpPacket(),
+				new ChatRequestPacket(),
+				new ChatPacket()
+			] as $packet) {
+			StarGateUtil::getClient()->getProtocolCodec()->registerPacket($packet->getPacketID(), $packet);
 		}
 
 		Loader::getInstance()->getServer()->getPluginManager()->registerEvents(new self(), Loader::getInstance());
@@ -101,7 +102,7 @@ class PacketHandler implements Listener
 	 */
 	public static function handle(StarGatePacket $packet): void
 	{
-		switch ($packet->getType()) {
+		switch ($packet->getPacketId()) {
 			case "SERVER_ENABLE":
 				/** @var EnablePacket $packet */
 				Output::important(Server::getInstance()->getOnlinePlayers(), "enable");
@@ -152,7 +153,7 @@ class PacketHandler implements Listener
 				PlayerCache::remove($packet->player);
 				$party = PartyManager::get($packet->player);
 				if ($party->isValid()) {
-					$party->offline[$packet->player] = Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(static function (int $currnetTick) use ($party, $packet): void{
+					$party->offline[$packet->player] = Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(static function (int $currnetTick) use ($party, $packet): void {
 						$party->remove($packet->player);
 					}), 6000);
 				}
