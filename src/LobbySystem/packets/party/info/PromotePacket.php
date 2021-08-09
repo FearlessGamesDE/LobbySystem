@@ -2,12 +2,11 @@
 
 namespace LobbySystem\packets\party\info;
 
-use alemiz\sga\protocol\StarGatePacket;
-use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
 use LobbySystem\utils\PlayerCache;
 
-class PromotePacket extends StarGatePacket
+class PromotePacket extends NetworkPacket
 {
 	/**
 	 * @var string
@@ -18,31 +17,22 @@ class PromotePacket extends StarGatePacket
 	 */
 	public $moderator;
 	/**
-	 * @var array
+	 * @var string[]
 	 */
 	public $party;
 
 	public function decodePayload(): void
 	{
-		$this->isEncoded = false;
-
-		$data = Convertor::getPacketStringData($this->encoded);
-
-		$this->player = $data[1];
-		$this->moderator = ($data[2] === "moderator");
-		$this->party = explode("#", $data[3]);
+		$this->player = $this->getString();
+		$this->moderator = $this->getBool();
+		$this->party = $this->getStringArray();
 	}
 
 	public function encodePayload(): void
 	{
-		$convertor = new Convertor($this->getID());
-
-		$convertor->putString(PlayerCache::get($this->player));
-		$convertor->putString(($this->moderator ? "moderator" : "owner"));
-		$convertor->putString(implode("#", PlayerCache::getRecursive($this->party)));
-
-		$this->encoded = $convertor->getPacketString();
-		$this->isEncoded = true;
+		$this->putString(PlayerCache::get($this->player));
+		$this->putBool($this->moderator);
+		$this->putStringArray(PlayerCache::getRecursive($this->party));
 	}
 
 	public function getPacketId(): int

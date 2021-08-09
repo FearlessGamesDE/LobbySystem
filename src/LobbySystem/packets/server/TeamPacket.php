@@ -2,34 +2,24 @@
 
 namespace LobbySystem\packets\server;
 
-use alemiz\sga\protocol\StarGatePacket;
-use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
 
-class TeamPacket extends StarGatePacket
+class TeamPacket extends NetworkPacket
 {
 	/**
-	 * @var array
+	 * @var string[]
 	 */
 	public $team;
 
 	public function decodePayload(): void
 	{
-		$this->isEncoded = false;
-
-		$data = Convertor::getPacketStringData($this->encoded);
-
-		$this->team = array_filter(explode("#", $data[1]));
+		$this->team = $this->getStringArray();
 	}
 
 	public function encodePayload(): void
 	{
-		$convertor = new Convertor($this->getID());
-
-		$convertor->putString(implode("#", $this->team));
-
-		$this->encoded = $convertor->getPacketString();
-		$this->isEncoded = true;
+		$this->putStringArray($this->team);
 	}
 
 	public function getPacketId(): int

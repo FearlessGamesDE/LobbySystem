@@ -2,12 +2,12 @@
 
 namespace LobbySystem\packets\party\request;
 
-use alemiz\sga\protocol\StarGatePacket;
 use alemiz\sga\StarGateAtlantis;
-use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
+use LobbySystem\utils\StarGateUtil;
 
-class ChatRequestPacket extends StarGatePacket
+class ChatRequestPacket extends NetworkPacket
 {
 	/**
 	 * @var string
@@ -24,25 +24,16 @@ class ChatRequestPacket extends StarGatePacket
 
 	public function decodePayload(): void
 	{
-		$this->isEncoded = false;
-
-		$data = Convertor::getPacketStringData($this->encoded);
-
-		$this->player = $data[1];
-		$this->message = str_replace("{:SIGN_SHOUT:}", "!", $data[2]);
-		$this->from = $data[3];
+		$this->player = $this->getString();
+		$this->message = $this->getString();
+		$this->from = $this->getString();
 	}
 
 	public function encodePayload(): void
 	{
-		$convertor = new Convertor($this->getID());
-
-		$convertor->putString(strtolower($this->player));
-		$convertor->putString(str_replace("!", "{:SIGN_SHOUT:}", $this->message));
-		$convertor->putString(StarGateAtlantis::getInstance()->getClientName());
-
-		$this->encoded = $convertor->getPacketString();
-		$this->isEncoded = true;
+		$this->putString(strtolower($this->player));
+		$this->putString($this->message);
+		$this->putString(StarGateUtil::getClient()->getClientName());
 	}
 
 	public function getPacketId(): int

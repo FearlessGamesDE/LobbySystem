@@ -2,12 +2,11 @@
 
 namespace LobbySystem\packets\party\info;
 
-use alemiz\sga\protocol\StarGatePacket;
-use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
 use LobbySystem\utils\PlayerCache;
 
-class InPartyPacket extends StarGatePacket
+class InPartyPacket extends NetworkPacket
 {
 	/**
 	 * @var string
@@ -20,23 +19,14 @@ class InPartyPacket extends StarGatePacket
 
 	public function decodePayload(): void
 	{
-		$this->isEncoded = false;
-
-		$data = Convertor::getPacketStringData($this->encoded);
-
-		$this->player = $data[1];
-		$this->inviter = $data[2];
+		$this->player = $this->getString();
+		$this->inviter = $this->getString();
 	}
 
 	public function encodePayload(): void
 	{
-		$convertor = new Convertor($this->getID());
-
-		$convertor->putString(PlayerCache::get($this->player));
-		$convertor->putString(PlayerCache::get($this->inviter));
-
-		$this->encoded = $convertor->getPacketString();
-		$this->isEncoded = true;
+		$this->putString(PlayerCache::get($this->player));
+		$this->putString(PlayerCache::get($this->inviter));
 	}
 
 	public function getPacketId(): int

@@ -2,12 +2,11 @@
 
 namespace LobbySystem\packets\party\request;
 
-use alemiz\sga\protocol\StarGatePacket;
-use alemiz\sga\StarGateAtlantis;
-use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
+use LobbySystem\utils\StarGateUtil;
 
-class DisbandRequestPacket extends StarGatePacket
+class DisbandRequestPacket extends NetworkPacket
 {
 	/**
 	 * @var string
@@ -20,23 +19,14 @@ class DisbandRequestPacket extends StarGatePacket
 
 	public function decodePayload(): void
 	{
-		$this->isEncoded = false;
-
-		$data = Convertor::getPacketStringData($this->encoded);
-
-		$this->player = $data[1];
-		$this->from = $data[2];
+		$this->player = $this->getString();
+		$this->from = $this->getString();
 	}
 
 	public function encodePayload(): void
 	{
-		$convertor = new Convertor($this->getID());
-
-		$convertor->putString(strtolower($this->player));
-		$convertor->putString(StarGateAtlantis::getInstance()->getClientName());
-
-		$this->encoded = $convertor->getPacketString();
-		$this->isEncoded = true;
+		$this->putString(strtolower($this->player));
+		$this->putString(StarGateUtil::getClient()->getClientName());
 	}
 
 	public function getPacketId(): int

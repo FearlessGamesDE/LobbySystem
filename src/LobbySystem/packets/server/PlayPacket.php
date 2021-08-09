@@ -2,11 +2,10 @@
 
 namespace LobbySystem\packets\server;
 
-use alemiz\sga\protocol\StarGatePacket;
-use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
 
-class PlayPacket extends StarGatePacket
+class PlayPacket extends NetworkPacket
 {
 	/**
 	 * @var string
@@ -19,23 +18,14 @@ class PlayPacket extends StarGatePacket
 
 	public function decodePayload(): void
 	{
-		$this->isEncoded = false;
-
-		$data = Convertor::getPacketStringData($this->encoded);
-
-		$this->player = $data[1];
-		$this->gamemode = $data[2];
+		$this->player = $this->getString();
+		$this->gamemode = $this->getString();
 	}
 
 	public function encodePayload(): void
 	{
-		$convertor = new Convertor($this->getID());
-
-		$convertor->putString(strtolower($this->player));
-		$convertor->putString(strtolower($this->gamemode));
-
-		$this->encoded = $convertor->getPacketString();
-		$this->isEncoded = true;
+		$this->putString(strtolower($this->player));
+		$this->putString(strtolower($this->gamemode));
 	}
 
 	public function getPacketId(): int

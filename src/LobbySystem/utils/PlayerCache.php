@@ -44,18 +44,26 @@ class PlayerCache
 	}
 
 	/**
-	 * @param $data
-	 * @return array|string
+	 * @param string[] $data
+	 * @return string[]
 	 */
-	public static function getRecursive($data)
+	public static function getRecursive(array $data): array
 	{
-		if(is_array($data)){
-			foreach ($data as $i => $dat){
-				$data[$i] = self::getRecursive($dat);
-			}
-			return $data;
+		foreach ($data as $i => $dat) {
+			$data[$i] = self::get($dat);
 		}
+		return $data;
+	}
 
-		return self::get($data);
+	/**
+	 * @param array<string, mixed> $data
+	 * @return array<string, mixed>
+	 */
+	public static function getRecursiveKeys(array $data): array
+	{
+		foreach ($data as $dat => $i) {
+			$data[self::get($dat)] = $i;
+		}
+		return $data;
 	}
 }

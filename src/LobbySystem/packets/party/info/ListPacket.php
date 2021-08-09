@@ -2,12 +2,11 @@
 
 namespace LobbySystem\packets\party\info;
 
-use alemiz\sga\protocol\StarGatePacket;
-use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
 use LobbySystem\utils\PlayerCache;
 
-class ListPacket extends StarGatePacket
+class ListPacket extends NetworkPacket
 {
 	/**
 	 * @var string
@@ -26,39 +25,26 @@ class ListPacket extends StarGatePacket
 	 */
 	public $members;
 	/**
-	 * @var bool[]
+	 * @var array<string, bool>
 	 */
 	public $online;
 
 	public function decodePayload(): void
 	{
-		$this->isEncoded = false;
-
-		$data = Convertor::getPacketStringData($this->encoded);
-
-		$this->player = $data[1];
-		$this->owner = $data[2];
-		$this->moderators = array_filter(explode("#", $data[3]));
-		$this->members = array_filter(explode("#", $data[4]));
-		$this->online = array_combine(explode("#", $data[6]), explode("#", $data[5]));
-		foreach ($this->online as $i => $o){
-			$this->online[$i] = (bool) $o;
-		}
+		$this->player = $this->getString();
+		$this->owner = $this->getString();
+		$this->moderators = $this->getStringArray();
+		$this->members = $this->getStringArray();
+		$this->online = $this->getKeyedBoolArray();
 	}
 
 	public function encodePayload(): void
 	{
-		$convertor = new Convertor($this->getID());
-
-		$convertor->putString(PlayerCache::get($this->player));
-		$convertor->putString(PlayerCache::get($this->owner));
-		$convertor->putString(implode("#", PlayerCache::getRecursive($this->moderators)));
-		$convertor->putString(implode("#", PlayerCache::getRecursive($this->members)));
-		$convertor->putString(implode("#", $this->online));
-		$convertor->putString(implode("#", PlayerCache::getRecursive(array_keys($this->online))));
-
-		$this->encoded = $convertor->getPacketString();
-		$this->isEncoded = true;
+		$this->putString(PlayerCache::get($this->player));
+		$this->putString(PlayerCache::get($this->owner));
+		$this->putStringArray(PlayerCache::getRecursive($this->moderators));
+		$this->putStringArray(PlayerCache::getRecursive($this->members));
+		$this->putKeyedBoolArray(PlayerCache::getRecursiveKeys($this->online));
 	}
 
 	public function getPacketId(): int

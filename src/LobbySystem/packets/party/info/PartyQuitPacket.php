@@ -2,12 +2,11 @@
 
 namespace LobbySystem\packets\party\info;
 
-use alemiz\sga\protocol\StarGatePacket;
-use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
 use LobbySystem\utils\PlayerCache;
 
-class PartyQuitPacket extends StarGatePacket
+class PartyQuitPacket extends NetworkPacket
 {
 	/**
 	 * @var string
@@ -18,31 +17,22 @@ class PartyQuitPacket extends StarGatePacket
 	 */
 	public $kick;
 	/**
-	 * @var array
+	 * @var string[]
 	 */
 	public $party;
 
 	public function decodePayload(): void
 	{
-		$this->isEncoded = false;
-
-		$data = Convertor::getPacketStringData($this->encoded);
-
-		$this->player = $data[1];
-		$this->kick = (bool) $data[2];
-		$this->party = explode("#", $data[3]);
+		$this->player = $this->getString();
+		$this->kick = $this->getBool();
+		$this->party = $this->getStringArray();
 	}
 
 	public function encodePayload(): void
 	{
-		$convertor = new Convertor($this->getID());
-
-		$convertor->putString(PlayerCache::get($this->player));
-		$convertor->putString(PlayerCache::get($this->kick));
-		$convertor->putString(implode("#", PlayerCache::getRecursive($this->party)));
-
-		$this->encoded = $convertor->getPacketString();
-		$this->isEncoded = true;
+		$this->putString(PlayerCache::get($this->player));
+		$this->putBool($this->kick);
+		$this->putStringArray(PlayerCache::getRecursive($this->party));
 	}
 
 	public function getPacketId(): int

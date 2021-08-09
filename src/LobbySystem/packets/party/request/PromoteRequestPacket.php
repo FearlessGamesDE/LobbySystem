@@ -2,12 +2,11 @@
 
 namespace LobbySystem\packets\party\request;
 
-use alemiz\sga\protocol\StarGatePacket;
-use alemiz\sga\StarGateAtlantis;
-use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
+use LobbySystem\utils\StarGateUtil;
 
-class PromoteRequestPacket extends StarGatePacket
+class PromoteRequestPacket extends NetworkPacket
 {
 	/**
 	 * @var string
@@ -24,25 +23,16 @@ class PromoteRequestPacket extends StarGatePacket
 
 	public function decodePayload(): void
 	{
-		$this->isEncoded = false;
-
-		$data = Convertor::getPacketStringData($this->encoded);
-
-		$this->player = $data[1];
-		$this->promoter = $data[2];
-		$this->from = $data[3];
+		$this->player = $this->getString();
+		$this->promoter = $this->getString();
+		$this->from = $this->getString();
 	}
 
 	public function encodePayload(): void
 	{
-		$convertor = new Convertor($this->getID());
-
-		$convertor->putString(strtolower($this->player));
-		$convertor->putString(strtolower($this->promoter));
-		$convertor->putString(StarGateAtlantis::getInstance()->getClientName());
-
-		$this->encoded = $convertor->getPacketString();
-		$this->isEncoded = true;
+		$this->putString(strtolower($this->player));
+		$this->putString(strtolower($this->promoter));
+		$this->putString(StarGateUtil::getClient()->getClientName());
 	}
 
 	public function getPacketId(): int

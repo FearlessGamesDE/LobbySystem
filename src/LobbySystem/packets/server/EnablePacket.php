@@ -2,23 +2,14 @@
 
 namespace LobbySystem\packets\server;
 
-use alemiz\sga\protocol\StarGatePacket;
-use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
 
-class EnablePacket extends StarGatePacket
+class EnablePacket extends NetworkPacket
 {
-	public function decodePayload(): void
-	{
-		$this->isEncoded = false;
-	}
+	public function decodePayload(): void { }
 
-	public function encodePayload(): void
-	{
-		$convertor = new Convertor($this->getID());
-		$this->encoded = $convertor->getPacketString();
-		$this->isEncoded = true;
-	}
+	public function encodePayload(): void { }
 
 	public function getPacketId(): int
 	{

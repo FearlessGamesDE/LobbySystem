@@ -2,35 +2,25 @@
 
 namespace LobbySystem\packets\party\info;
 
-use alemiz\sga\protocol\StarGatePacket;
-use alemiz\sga\utils\Convertor;
+use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
 use LobbySystem\utils\PlayerCache;
 
-class WarpPacket extends StarGatePacket
+class WarpPacket extends NetworkPacket
 {
 	/**
-	 * @var array
+	 * @var string[]
 	 */
 	public $party;
 
 	public function decodePayload(): void
 	{
-		$this->isEncoded = false;
-
-		$data = Convertor::getPacketStringData($this->encoded);
-
-		$this->party = explode("#", $data[1]);
+		$this->party = $this->getStringArray();
 	}
 
 	public function encodePayload(): void
 	{
-		$convertor = new Convertor($this->getID());
-
-		$convertor->putString(implode("#", PlayerCache::getRecursive($this->party)));
-
-		$this->encoded = $convertor->getPacketString();
-		$this->isEncoded = true;
+		$this->putStringArray(PlayerCache::getRecursive($this->party));
 	}
 
 	public function getPacketId(): int
