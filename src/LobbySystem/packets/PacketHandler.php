@@ -125,7 +125,7 @@ class PacketHandler implements Listener
 						break;
 					}
 				}
-				if ($party->getOwner() === $packet->inviter || in_array($packet->inviter, $party->getModerators())) {
+				if ($party->getOwner() === $packet->inviter || in_array($packet->inviter, $party->getModerators(), true)) {
 					$new = PartyManager::get($packet->player);
 					if ($new->isValid()) {
 						$info = new InPartyPacket();
@@ -172,11 +172,7 @@ class PacketHandler implements Listener
 			case PacketPool::PARTY_REQUEST_LIST:
 				/** @var ListRequestPacket $packet */
 				$party = PartyManager::get($packet->player);
-				if (!$party->isValid()) {
-					$info = new NotInPartyPacket();
-					$info->player = $packet->player;
-					StarGateUtil::sendTo($packet->from, $info);
-				} else {
+				if ($party->isValid()) {
 					$info = new ListPacket();
 					$info->player = $packet->player;
 					$info->owner = $party->getOwner();
@@ -185,8 +181,11 @@ class PacketHandler implements Listener
 					foreach ($party->getContents() as $player) {
 						$info->online[$player] = PlayerCache::isOnline($player);
 					}
-					StarGateUtil::sendTo($packet->from, $info);
+				} else {
+					$info = new NotInPartyPacket();
+					$info->player = $packet->player;
 				}
+				StarGateUtil::sendTo($packet->from, $info);
 				break;
 			case PacketPool::PARTY_INFO_LIST:
 				/** @var ListPacket $packet */
@@ -289,19 +288,17 @@ class PacketHandler implements Listener
 				if (!$party->isValid()) {
 					$info = new NotInPartyPacket();
 					$info->player = $packet->player;
-					StarGateUtil::sendTo($packet->from, $info);
 				} elseif ($party->getOwner() === $packet->player) {
 					foreach ($party->getContents() as $player) {
 						StarGateUtil::transferPlayer($player, $packet->from);
 					}
 					$info = new WarpPacket();
 					$info->party = $party->getContents();
-					StarGateUtil::sendTo($packet->from, $info);
 				} else {
 					$info = new NoPermissionOwnerPacket();
 					$info->player = $packet->player;
-					StarGateUtil::sendTo($packet->from, $info);
 				}
+				StarGateUtil::sendTo($packet->from, $info);
 				break;
 			case PacketPool::PARTY_INFO_WARP:
 				/** @var WarpPacket $packet */
