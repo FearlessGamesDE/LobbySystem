@@ -40,6 +40,7 @@ use LobbySystem\party\PartyManager;
 use LobbySystem\queue\QueueManager;
 use LobbySystem\utils\Output;
 use LobbySystem\utils\PlayerCache;
+use LobbySystem\utils\StarGateUtil;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -80,7 +81,7 @@ class PacketHandler implements Listener
 					 new ChatRequestPacket(),
 					 new ChatPacket()
 				 ] as $packet) {
-			StarGateAtlantis::RegisterPacket($packet);
+			StarGateUtil::getClient()->getProtocolCodec()->registerPacket($packet);
 		}
 
 		Loader::getInstance()->getServer()->getPluginManager()->registerEvents(new self(), Loader::getInstance());

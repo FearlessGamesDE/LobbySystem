@@ -12,8 +12,10 @@ use LobbySystem\queue\QueueManager;
 use LobbySystem\utils\ErrorReporter;
 use LobbySystem\utils\Output;
 use LobbySystem\utils\RawLogger;
+use LobbySystem\utils\StarGateUtil;
 use LobbySystem\utils\TimingManager;
 use pocketmine\plugin\PluginBase;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 
 class Loader extends PluginBase
@@ -22,30 +24,37 @@ class Loader extends PluginBase
 	/**
 	 * @var Loader
 	 */
-	public static $instance;
-
-	public static $serverName = "";
+	private static $instance;
+	/**
+	 * @var bool
+	 */
+	private static $isMaster;
+	/**
+	 * @var string
+	 */
+	private static $serverName = "";
 
 	public function onEnable(): void
 	{
 		self::$instance = $this;
-		self::$serverName = StarGateAtlantis::getInstance()->getClientName();
+		self::$serverName = StarGateUtil::getClient()->getClientName();
 		TimingManager::load();
 		Output::load();
 		PacketHandler::load();
 		CommandManager::load();
 		ErrorReporter::load();
 		Server::getInstance()->getPluginManager()->registerEvents(new RawLogger(), $this);
-		if(StarGateAtlantis::getInstance()->getClientName() === "lobby"){
+		if (StarGateUtil::getClient()->getClientName() === "lobby") {
+			self::$isMaster = true;
 			GamemodeManager::load();
 			QueueManager::load();
-			StarGateAtlantis::getInstance()->forwardPacket("all", "default", new EnablePacket());
+			$this->getScheduler()->scheduleRepeatingTask(new ClosureTask(static function (): void { StarGateUtil::refreshServerList(); }), 40);
 		}
 	}
 
 	public function onDisable(): void
 	{
-		StarGateAtlantis::getInstance()->forwardPacket("all", "default", new DisablePacket());
+		StarGateUtil::distribute(new DisablePacket());
 		TimingManager::send();
 		ErrorReporter::send();
 		$this->getServer()->shutdown();
@@ -57,5 +66,21 @@ class Loader extends PluginBase
 	public static function getInstance(): Loader
 	{
 		return self::$instance;
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function getServerName(): string
+	{
+		return self::$serverName;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function isMaster(): bool
+	{
+		return self::$isMaster;
 	}
 }

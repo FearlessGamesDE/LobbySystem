@@ -1,13 +1,10 @@
 name: LobbySystem
 main: LobbySystem\Loader
 version: 1.0.0
-api: 3.0.0
+api: 4.0.0
 author: platz1de
 depend: StarGate-Atlantis
 description: FearlessGames LobbySystem
 permissions:
-  lobbysystem:
-    default: false
-    children:
-      lobbysystem.command.start:
-        default: op
+  lobbysystem.command.start:
+    default: op
