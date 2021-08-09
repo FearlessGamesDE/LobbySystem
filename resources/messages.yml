@@ -68,7 +68,7 @@ message-party-nopermission-moderator: "§cYou need to be at least a party modera
 message-party-nopermission-owner: "§cYou need to be the party owner to do this"
 message-party-disband: "Your party was disbanded"
 message-party-warp: "Your party was warped"
-message-party-to-big: "§cYour party is to big to enter this gamemode"
+message-party-to-big: "§cYour party is too big to enter this gamemode"
 
 #Args: {owner} {moderators} {members}
 message-party-list: "§eList of all party Members:\n§eOwner: {owner}\n§eModerator: {moderators}\n§eMember: {members}"
