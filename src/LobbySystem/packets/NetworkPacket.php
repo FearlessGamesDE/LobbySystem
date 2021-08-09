@@ -2,10 +2,20 @@
 
 namespace LobbySystem\packets;
 
+use alemiz\sga\codec\StarGatePacketHandler;
 use alemiz\sga\protocol\StarGatePacket;
 
 abstract class NetworkPacket extends StarGatePacket
 {
+	/**
+	 * @param StarGatePacketHandler $handler
+	 * @return bool
+	 */
+	public function handle(StarGatePacketHandler $handler): bool
+	{
+		return PacketHandler::handle($this);
+	}
+
 	/**
 	 * @param string $string
 	 */

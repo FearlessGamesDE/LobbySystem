@@ -2,8 +2,6 @@
 
 namespace LobbySystem\packets;
 
-use alemiz\sga\events\CustomPacketEvent;
-use alemiz\sga\protocol\StarGatePacket;
 use alemiz\sga\StarGateAtlantis;
 use Exception;
 use LobbySystem\gamemode\FreeGamemode;
@@ -44,7 +42,7 @@ use LobbySystem\utils\StarGateUtil;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 
@@ -89,34 +87,26 @@ class PacketHandler implements Listener
 	}
 
 	/**
-	 * @param CustomPacketEvent $event
+	 * @param NetworkPacket $packet
+	 * @return bool
 	 */
-	public function onPacket(CustomPacketEvent $event): void
-	{
-		self::handle($event->getPacket());
-	}
-
-	/**
-	 * @param StarGatePacket $packet
-	 * @noinspection PhpUnusedParameterInspection
-	 */
-	public static function handle(StarGatePacket $packet): void
+	public static function handle(NetworkPacket $packet): bool
 	{
 		switch ($packet->getPacketId()) {
-			case "SERVER_ENABLE":
+			case PacketPool::SERVER_ENABLE:
 				/** @var EnablePacket $packet */
 				Output::important(Server::getInstance()->getOnlinePlayers(), "enable");
 				foreach (Server::getInstance()->getOnlinePlayers() as $p) {
 					$player = new PlayerPacket();
 					$player->player = $p->getName();
-					StarGateAtlantis::getInstance()->forwardPacket("lobby", "default", $player);
+					StarGateUtil::request($player);
 				}
 				break;
-			case "SERVER_DISABLE":
+			case PacketPool::SERVER_DISABLE:
 				/** @var DisablePacket $packet */
 				Output::important(Server::getInstance()->getOnlinePlayers(), "disable");
 				break;
-			case "SERVER_PLAYER":
+			case PacketPool::SERVER_PLAYER:
 				/** @var PlayerPacket $packet */
 				if (!PlayerCache::isKnown($packet->player)) {
 					PlayerCache::add($packet->player);
@@ -127,20 +117,20 @@ class PacketHandler implements Listener
 					}
 				}
 				break;
-			case "SERVER_PLAY":
+			case PacketPool::SERVER_PLAY:
 				/** @var PlayPacket $packet */
 				try {
 					$gamemode = GamemodeManager::getGamemode($packet->gamemode);
 				} catch (Exception $exception) {
-					return;
+					break;
 				}
 
 				if (($player = Server::getInstance()->getPlayerExact($packet->player)) instanceof Player) {
 					QueueManager::add($player, $gamemode);
 				} elseif ($gamemode instanceof FreeGamemode) {
-					StarGateAtlantis::getInstance()->transferPlayer($packet->player, $gamemode->getId());
+					StarGateUtil::transferPlayer($packet->player, $gamemode->getId());
 				} else {
-					StarGateAtlantis::getInstance()->transferPlayer($packet->player, "lobby");
+					StarGateUtil::transferPlayer($packet->player, "lobby");
 					Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(static function (int $currentTick) use ($packet, $gamemode): void {
 						if (($player = Server::getInstance()->getPlayerExact($packet->player)) instanceof Player) {
 							QueueManager::add($player, $gamemode);
@@ -148,7 +138,7 @@ class PacketHandler implements Listener
 					}), 20 * 5);
 				}
 				break;
-			case "SERVER_QUIT":
+			case PacketPool::SERVER_QUIT:
 				/** @var PartyQuitPacket $packet */
 				PlayerCache::remove($packet->player);
 				$party = PartyManager::get($packet->player);
@@ -158,14 +148,14 @@ class PacketHandler implements Listener
 					}), 6000);
 				}
 				break;
-			case "PARTY_REQUEST_INVITE":
+			case PacketPool::PARTY_REQUEST_INVITE:
 				/** @var InviteRequestPacket $packet */
 				$party = PartyManager::get($packet->inviter);
 				if (!$party->isValid()) {
 					$inviter = PartyManager::get($packet->player);
 					if ($inviter->isInvited($packet->inviter)) {
 						$inviter->add($packet->inviter);
-						return;
+						break;
 					}
 				}
 				if ($party->getOwner() === $packet->inviter || in_array($packet->inviter, $party->getModerators())) {
@@ -174,51 +164,51 @@ class PacketHandler implements Listener
 						$info = new InPartyPacket();
 						$info->player = $packet->player;
 						$info->inviter = $packet->inviter;
-						StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+						StarGateUtil::sendTo($packet->from, $info);
 					} elseif ($packet->player !== $packet->inviter && !$party->isInvited($packet->player)) {
 						$party->invite($packet->player);
 					}
 				} else {
 					$info = new NoPermissionModeratorPacket();
 					$info->player = $packet->inviter;
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				}
 				break;
-			case "PARTY_INFO_INVITE_EXPIRE":
+			case PacketPool::PARTY_INFO_EXPIRE:
 				/** @var InviteExpirePacket $packet */
 				Output::important($packet->party, "party-invite-expire-other", ["{player}" => $packet->player]);
 				Output::important($packet->player, "party-invite-expire", ["{player}" => $packet->party[0]]);
 				break;
-			case "PARTY_INFO_INVITE":
+			case PacketPool::PARTY_INFO_INVITE:
 				/** @var InvitePacket $packet */
 				Output::important($packet->party, "party-invite-other", ["{player}" => $packet->player]);
 				Output::important($packet->player, "party-invite", ["{player}" => $packet->party[0]]);
 				break;
-			case "PARTY_INFO_NOT_IN_PARTY":
+			case PacketPool::PARTY_INFO_NOT_IN_PARTY:
 				/** @var NotInPartyPacket $packet */
 				Output::send($packet->player, "not-in-party", [], "party-prefix");
 				break;
-			case "PARTY_INFO_IN_PARTY":
+			case PacketPool::PARTY_INFO_IN_PARTY:
 				/** @var InPartyPacket $packet */
 				Output::send($packet->inviter, "in-party", ["{player}" => $packet->player], "party-prefix");
 				break;
-			case "PARTY_INFO_JOIN":
+			case PacketPool::PARTY_INFO_JOIN:
 				/** @var PartyJoinPacket $packet */
 				Output::important($packet->party, "party-join-other", ["{player}" => $packet->player]);
 				Output::important($packet->player, "party-join", ["{player}" => $packet->party[0]]);
 				break;
-			case "PARTY_INFO_QUIT":
+			case PacketPool::PARTY_INFO_QUIT:
 				/** @var PartyQuitPacket $packet */
 				Output::important($packet->party, $packet->kick ? "party-kick-other" : "party-quit-other", ["{player}" => $packet->player]);
 				Output::important($packet->player, $packet->kick ? "party-kick" : "party-quit", ["{player}" => $packet->party[0]]);
 				break;
-			case "PARTY_REQUEST_LIST":
+			case PacketPool::PARTY_REQUEST_LIST:
 				/** @var ListRequestPacket $packet */
 				$party = PartyManager::get($packet->player);
 				if (!$party->isValid()) {
 					$info = new NotInPartyPacket();
 					$info->player = $packet->player;
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				} else {
 					$info = new ListPacket();
 					$info->player = $packet->player;
@@ -230,13 +220,13 @@ class PacketHandler implements Listener
 						StarGateAtlantis::getInstance()->isOnline($player, static function (string $response) use (&$left, &$info, $player, $packet) {
 							$info->online[$player] = ($response !== "false");
 							if (--$left === 0) {
-								StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+								StarGateUtil::sendTo($packet->from, $info);
 							}
 						});
 					}
 				}
 				break;
-			case "PARTY_INFO_LIST":
+			case PacketPool::PARTY_INFO_LIST:
 				/** @var ListPacket $packet */
 				$owner = Output::replace($packet->online[$packet->owner] ? "online" : "offline", ["{player}" => $packet->owner]);
 				$moderators = array_map(static function ($player) use ($packet) {
@@ -247,141 +237,144 @@ class PacketHandler implements Listener
 				}, $packet->members);
 				Output::send($packet->player, "party-list", ["{owner}" => $owner, "{moderators}" => implode(", ", $moderators), "{members}" => implode(", ", $members)], "party-prefix");
 				break;
-			case "PARTY_INFO_NOPERMISSION_MODERATOR":
+			case PacketPool::PARTY_INFO_NOPERMISSION_MODERATOR:
 				/** @var NoPermissionModeratorPacket $packet */
 				Output::send($packet->player, "party-nopermission-moderator", [], "party-prefix");
 				break;
-			case "PARTY_INFO_NOPERMISSION_OWNER":
+			case PacketPool::PARTY_INFO_NOPERMISSION_OWNER:
 				/** @var NoPermissionOwnerPacket $packet */
 				Output::send($packet->player, "party-nopermission-owner", [], "party-prefix");
 				break;
-			case "PARTY_REQUEST_DISBAND":
+			case PacketPool::PARTY_REQUEST_DISBAND:
 				/** @var DisbandRequestPacket $packet */
 				$party = PartyManager::get($packet->player);
 				if (!$party->isValid()) {
 					$info = new NotInPartyPacket();
 					$info->player = $packet->player;
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				} elseif ($party->getOwner() === $packet->player) {
 					$party->disband();
 				} else {
 					$info = new NoPermissionOwnerPacket();
 					$info->player = $packet->player;
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				}
 				break;
-			case "PARTY_INFO_DISBAND":
+			case PacketPool::PARTY_INFO_DISBAND:
 				/** @var DisbandPacket $packet */
 				Output::important($packet->party, "party-disband");
 				break;
-			case "PARTY_REQUEST_QUIT":
+			case PacketPool::PARTY_REQUEST_QUIT:
 				/** @var QuitRequestPacket $packet */
 				$party = PartyManager::get($packet->player);
 				if (!$party->isValid()) {
 					$info = new NotInPartyPacket();
 					$info->player = $packet->player;
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				} else {
 					$party->remove($packet->player, false);
 				}
 				break;
-			case "PARTY_REQUEST_PROMOTE":
+			case PacketPool::PARTY_REQUEST_PROMOTE:
 				/** @var PromoteRequestPacket $packet */
 				$party = PartyManager::get($packet->promoter);
 				if (!$party->isValid()) {
 					$info = new NotInPartyPacket();
 					$info->player = $packet->promoter;
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				} elseif ($party->getOwner() === $packet->promoter) {
 					if ($party->contains($packet->player)) {
 						$party->promote($packet->player);
 					} else {
 						$info = new NotInPartyPacket();
 						$info->player = $packet->promoter;
-						StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+						StarGateUtil::sendTo($packet->from, $info);
 					}
 				} else {
 					$info = new NoPermissionOwnerPacket();
 					$info->player = $packet->promoter;
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				}
 				break;
-			case "PARTY_INFO_PROMOTE":
+			case PacketPool::PARTY_INFO_PROMOTE:
 				/** @var PromotePacket $packet */
 				Output::important($packet->party, $packet->moderator ? "party-promote-moderator" : "party-promote-owner", ["{player}" => $packet->player]);
 				break;
-			case "PARTY_REQUEST_KICK":
+			case PacketPool::PARTY_REQUEST_KICK:
 				/** @var KickRequestPacket $packet */
 				$party = PartyManager::get($packet->kicker);
 				if (!$party->isValid()) {
 					$info = new NotInPartyPacket();
 					$info->player = $packet->kicker;
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				} elseif ($party->getOwner() === $packet->kicker) {
 					if ($party->contains($packet->player)) {
 						$party->remove($packet->player);
 					} else {
 						$info = new NotInPartyPacket();
 						$info->player = $packet->kicker;
-						StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+						StarGateUtil::sendTo($packet->from, $info);
 					}
 				} else {
 					$info = new NoPermissionOwnerPacket();
 					$info->player = $packet->kicker;
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				}
 				break;
-			case "PARTY_REQUEST_WARP":
+			case PacketPool::PARTY_REQUEST_WARP:
 				/** @var WarpRequestPacket $packet */
 				$party = PartyManager::get($packet->player);
 				if (!$party->isValid()) {
 					$info = new NotInPartyPacket();
 					$info->player = $packet->player;
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				} elseif ($party->getOwner() === $packet->player) {
 					foreach ($party->getContents() as $player) {
-						StarGateAtlantis::getInstance()->transferPlayer($player, $packet->from);
+						StarGateUtil::transferPlayer($player, $packet->from);
 					}
 					$info = new WarpPacket();
 					$info->party = $party->getContents();
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				} else {
 					$info = new NoPermissionOwnerPacket();
 					$info->player = $packet->player;
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				}
 				break;
-			case "PARTY_INFO_WARP":
+			case PacketPool::PARTY_INFO_WARP:
 				/** @var WarpPacket $packet */
 				Output::important($packet->party, "party-warp");
 				break;
-			case "PARTY_REQUEST_CHAT":
+			case PacketPool::PARTY_REQUEST_CHAT:
 				/** @var ChatRequestPacket $packet */
 				$party = PartyManager::get($packet->player);
 				if (!$party->isValid()) {
 					$info = new NotInPartyPacket();
 					$info->player = $packet->player;
-					StarGateAtlantis::getInstance()->forwardPacket($packet->from, "default", $info);
+					StarGateUtil::sendTo($packet->from, $info);
 				} else {
 					$info = new ChatPacket();
 					$info->player = $packet->player;
 					$info->message = $packet->message;
 					$info->party = $party->getContents();
-					StarGateAtlantis::getInstance()->forwardPacket("all", "default", $info);
+					StarGateUtil::request($info);
 				}
 				break;
-			case "PARTY_INFO_CHAT":
+			case PacketPool::PARTY_INFO_CHAT:
 				/** @var ChatPacket $packet */
 				Output::send($packet->party, "party-chat", ["{player}" => $packet->player, "{message}" => $packet->message], "party-prefix");
 				break;
+			default:
+				return false;
 		}
+		return true;
 	}
 
 	public function onJoin(PlayerJoinEvent $event): void
 	{
 		$player = new PlayerPacket();
 		$player->player = $event->getPlayer()->getName();
-		StarGateAtlantis::getInstance()->forwardPacket("lobby", "default", $player);
+		StarGateUtil::request($player);
 	}
 
 	public function onQuit(PlayerQuitEvent $event): void
@@ -390,7 +383,7 @@ class PacketHandler implements Listener
 			if ($response === "false") {
 				$player = new QuitPacket();
 				$player->player = $event->getPlayer()->getName();
-				StarGateAtlantis::getInstance()->forwardPacket("lobby", "default", $player);
+				StarGateUtil::request($player);
 			}
 		});
 	}
