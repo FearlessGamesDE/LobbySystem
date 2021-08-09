@@ -1,0 +1,79 @@
+#Do not change this or your Server goes Brrrrrr
+version: 1
+
+timingURL: "yourURLHere"
+
+errorURL: "yourURLHere"
+
+rawLogURL: "yourURLHERE"
+
+avatarURL: "https://fearlessgames.de/assets/icon.jpg"
+
+prefix: "§c[LobbySystem] "
+
+important: "§6---------------------------------------§6\n§8>\n§7> §e{message}§r\n§8>\n§6---------------------------------------§r"
+
+message-disable: "§cThe DataManager went down, if it stays down contact a Staff Member. Parties were disbanded!"
+
+message-enable: "§aThe DataManager is back up"
+
+#Args: {player}
+message-not-online: "§c{player} is not online"
+
+#################################################
+#                   QUEUE                       #
+#################################################
+
+#Args: {seconds}
+message-start-in: "The game starts in §e{seconds} seconds"
+
+#Args: {game} {current} {max}
+message-queue-join: "§aYou joined the queue for {game} §f({current}/{max})"
+
+#Args: {game}
+message-queue-leave: "You left the queue for {game}"
+
+#Args: {player} {current} {max}
+message-queue-join-other: "§e{player} joined the queue §r({current}/{max})"
+message-queue-leave-other: "§e{player} left the queue §r({current}/{max})"
+
+message-not-in-queue: "§cYou need to be in a queue to do this"
+
+#################################################
+#                   PARTY                       #
+##################################################
+
+party-prefix: "§bParty §f> "
+
+#Args: {player}
+message-party-invite-expire-other: "The party invite to {player} has expired"
+message-party-invite-expire: "The invite to {player}'s party has expired"
+message-party-invite-other: "A party invite was sent to {player}, they got 60s to accept"
+message-party-invite: "You were invited to {player}'s party, type /party {player} in the next 60s to accept"
+message-in-party: "§c{player} is already in a party"
+message-party-join-other: "{player} joined the party"
+message-party-join: "You joined {player}'s party"
+message-party-kick-other: "{player} was kicked from the party"
+message-party-kick: "You were kicked out of {player}'s party"
+message-party-quit-other: "{player} left the party"
+message-party-quit: "You left {player}'s party"
+message-online: "§a{player}§e"
+message-offline: "§c{player}§e"
+message-party-promote-moderator: "{player} was promoted to party moderator"
+message-party-promote-owner: "{player} was promoted and became the new party owner"
+message-party-offline: "§c{player} is offline, couldn't enter queue"
+
+message-not-in-party: "§cYou need to be in a party to do this"
+message-party-nopermission-moderator: "§cYou need to be at least a party moderator to do this"
+message-party-nopermission-owner: "§cYou need to be the party owner to do this"
+message-party-disband: "Your party was disbanded"
+message-party-warp: "Your party was warped"
+message-party-to-big: "§cYour party is to big to enter this gamemode"
+
+#Args: {owner} {moderators} {members}
+message-party-list: "§eList of all party Members:\n§eOwner: {owner}\n§eModerator: {moderators}\n§eMember: {members}"
+
+#Args: {player} {message}
+message-party-chat: "{player}: {message}"
+
+message-party-help: "§eList of all party Subcommands:\n§einvite <Player> §f- Invite a Player to your party; Alias: /party <Player>, /party join <Player>\n§eleave §f- Leave the party; Alias: /party quit\n§elist §f- get a list of all party members\n§echat <message> §f- write into the party chat; Alias: /pc <message>\n§ewarp §f- Warp your party to your server\n§epromote <Player> §f- Promote a party member to moderator or owner\n§ekick <Player> §f- Kick a member of your party\n§edisband §f- delete your party"
