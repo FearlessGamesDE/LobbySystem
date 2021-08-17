@@ -11,6 +11,8 @@ use alemiz\sga\protocol\StarGatePacket;
 use alemiz\sga\StarGateAtlantis;
 use Exception;
 use LobbySystem\Loader;
+use LobbySystem\packets\NetworkPacket;
+use LobbySystem\packets\PacketHandler;
 use LobbySystem\packets\server\EnablePacket;
 use UnexpectedValueException;
 
@@ -38,11 +40,15 @@ class StarGateUtil
 	}
 
 	/**
-	 * @param StarGatePacket $packet
+	 * @param NetworkPacket $packet
 	 */
-	public static function request(StarGatePacket $packet): void
+	public static function request(NetworkPacket $packet): void
 	{
-		self::sendTo("lobby", $packet);
+		if (Loader::isMaster()) {
+			PacketHandler::handle($packet);
+		} else {
+			self::sendTo("lobby", $packet);
+		}
 	}
 
 	/**
