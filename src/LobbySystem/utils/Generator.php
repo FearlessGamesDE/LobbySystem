@@ -29,12 +29,12 @@ class Generator
 	}
 
 	/**
-	 * @param string $number
+	 * @param int $number
 	 * @return string
 	 */
-	public static function toString(string $number): string
+	public static function toString(int $number): string
 	{
-		$chars = array_reverse(str_split($number));
+		$chars = array_reverse(str_split((string) $number));
 		foreach ($chars as $i => $char) {
 			$chars[$i] = (int) $char;
 		}

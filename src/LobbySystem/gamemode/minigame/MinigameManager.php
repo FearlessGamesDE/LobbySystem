@@ -17,7 +17,8 @@ class MinigameManager
 		if (!is_dir(Loader::getInstance()->getDataFolder() . "minigames") && !mkdir($concurrentDirectory = Loader::getInstance()->getDataFolder() . "minigames") && !is_dir($concurrentDirectory)) {
 			throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 		}
-		foreach (array_diff(scandir(Loader::getInstance()->getDataFolder() . "minigames"), [".", ".."]) as $file) {
+		/** @var string $file */
+		foreach (array_diff((array) scandir(Loader::getInstance()->getDataFolder() . "minigames"), [".", ".."]) as $file) {
 			$data = yaml_parse_file(Loader::getInstance()->getDataFolder() . "minigames/" . $file);
 			self::registerMinigame(new Minigame($file, $data["name"] ?? $file));
 		}

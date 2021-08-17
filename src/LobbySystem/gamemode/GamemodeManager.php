@@ -21,7 +21,8 @@ class GamemodeManager
 		if (!is_dir(Loader::getInstance()->getDataFolder() . "gamemodes") && !mkdir($concurrentDirectory = Loader::getInstance()->getDataFolder() . "gamemodes") && !is_dir($concurrentDirectory)) {
 			throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 		}
-		foreach (array_diff(scandir(Loader::getInstance()->getDataFolder() . "gamemodes"), [".", ".."]) as $file) {
+		/** @var string $file */
+		foreach (array_diff((array) scandir(Loader::getInstance()->getDataFolder() . "gamemodes"), [".", ".."]) as $file) {
 			$data = yaml_parse_file(Loader::getInstance()->getDataFolder() . "gamemodes/" . $file);
 			$minigame = MinigameManager::getMinigame($data["game"] ?? "");
 			if (!$minigame instanceof Minigame) {
