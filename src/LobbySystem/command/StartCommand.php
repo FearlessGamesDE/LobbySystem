@@ -7,7 +7,7 @@ use LobbySystem\queue\QueueManager;
 use LobbySystem\utils\Output;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 
 class StartCommand extends Command
 {
@@ -17,19 +17,19 @@ class StartCommand extends Command
 		$this->setPermission("lobbysystem.command.start");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args)
+	public function execute(CommandSender $sender, string $commandLabel, array $args): void
 	{
 		if (!$sender instanceof Player) {
 			return;
 		}
 
-		if (!$this->testPermission($sender)){
+		if (!$this->testPermission($sender)) {
 			return;
 		}
 
 		$queue = QueueManager::getQueueOf($sender);
 
-		if(!$queue instanceof Queue){
+		if (!$queue instanceof Queue) {
 			Output::send($sender, "not-in-queue");
 			return;
 		}

@@ -7,7 +7,7 @@ use LobbySystem\queue\QueueManager;
 use LobbySystem\utils\Output;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 
 class LeaveCommand extends Command
 {
@@ -16,7 +16,12 @@ class LeaveCommand extends Command
 		parent::__construct("leave", "Leave the queue", "/leave");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args)
+	/**
+	 * @param CommandSender $sender
+	 * @param string        $commandLabel
+	 * @param string[]      $args
+	 */
+	public function execute(CommandSender $sender, string $commandLabel, array $args): void
 	{
 		if (!$sender instanceof Player) {
 			return;

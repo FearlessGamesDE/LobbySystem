@@ -2,7 +2,7 @@
 
 namespace LobbySystem\command;
 
-use alemiz\sga\StarGateAtlantis;
+use LobbySystem\Loader;
 use pocketmine\Server;
 
 class CommandManager
@@ -13,7 +13,7 @@ class CommandManager
 			new PartyCommand(),
 			new PlayCommand()
 		]);
-		if (StarGateAtlantis::getInstance()->getClientName() === "lobby") {
+		if (Loader::isMaster()) {
 			Server::getInstance()->getCommandMap()->registerAll("LobbySystem", [
 				new LeaveCommand(),
 				new StartCommand()
