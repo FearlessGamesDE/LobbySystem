@@ -5,7 +5,7 @@ namespace LobbySystem\queue;
 use alemiz\sga\StarGateAtlantis;
 use LobbySystem\gamemode\Gamemode;
 use LobbySystem\Loader;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use UnexpectedValueException;

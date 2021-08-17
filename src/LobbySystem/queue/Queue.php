@@ -10,7 +10,7 @@ use LobbySystem\packets\server\TeamPacket;
 use LobbySystem\party\PartyManager;
 use LobbySystem\utils\Generator;
 use LobbySystem\utils\Output;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;

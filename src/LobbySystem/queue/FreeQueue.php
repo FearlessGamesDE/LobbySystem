@@ -4,7 +4,7 @@ namespace LobbySystem\queue;
 
 use alemiz\sga\StarGateAtlantis;
 use LobbySystem\gamemode\Gamemode;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use UnexpectedValueException;
 
 class FreeQueue extends Queue

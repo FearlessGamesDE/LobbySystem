@@ -8,7 +8,7 @@ use LobbySystem\Gamemode\Gamemode;
 use LobbySystem\Loader;
 use LobbySystem\party\PartyManager;
 use LobbySystem\utils\Output;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 
