@@ -316,7 +316,7 @@ class PacketHandler implements Listener
 					$info->player = $packet->player;
 					$info->message = $packet->message;
 					$info->party = $party->getContents();
-					StarGateUtil::request($info);
+					StarGateUtil::distribute($info);
 				}
 				break;
 			case PacketPool::PARTY_INFO_CHAT:
