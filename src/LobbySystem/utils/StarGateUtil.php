@@ -4,6 +4,7 @@ namespace LobbySystem\utils;
 
 use alemiz\sga\client\StarGateClient;
 use alemiz\sga\protocol\ForwardPacket;
+use alemiz\sga\protocol\ManageServerPacket;
 use alemiz\sga\protocol\ServerInfoResponsePacket;
 use alemiz\sga\protocol\ServerTransferPacket;
 use alemiz\sga\protocol\StarGatePacket;
@@ -11,7 +12,6 @@ use alemiz\sga\StarGateAtlantis;
 use Exception;
 use LobbySystem\Loader;
 use LobbySystem\packets\server\EnablePacket;
-use pocketmine\Server;
 use UnexpectedValueException;
 
 class StarGateUtil
@@ -98,6 +98,22 @@ class StarGateUtil
 		$packet = new ServerTransferPacket();
 		$packet->setPlayerName($player);
 		$packet->setTargetServer($server);
+		self::getClient()->sendPacket($packet);
+	}
+
+	/**
+	 * @param string      $serverName
+	 * @param int         $port
+	 * @param string|null $ip
+	 */
+	public static function addServer(string $serverName, int $port, string $ip = null): void
+	{
+		$packet = new ManageServerPacket();
+		$packet->action = ManageServerPacket::ADD;
+		$packet->serverName = $serverName;
+		$packet->address = $ip ?? "0.0.0.0";
+		$packet->addressPort = $port;
+		$packet->serverType = "bedrock";
 		self::getClient()->sendPacket($packet);
 	}
 }

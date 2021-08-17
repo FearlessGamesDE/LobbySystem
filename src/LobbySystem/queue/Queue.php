@@ -1,15 +1,16 @@
-<?php /** @noinspection PhpUnusedParameterInspection */
+<?php
 
 namespace LobbySystem\queue;
 
 use alemiz\sga\StarGateAtlantis;
-use LobbySystem\Gamemode\Gamemode;
+use LobbySystem\gamemode\Gamemode;
 use LobbySystem\gamemode\TeamGamemode;
 use LobbySystem\Loader;
 use LobbySystem\packets\server\TeamPacket;
 use LobbySystem\party\PartyManager;
 use LobbySystem\utils\Generator;
 use LobbySystem\utils\Output;
+use LobbySystem\utils\StarGateUtil;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\TaskHandler;
@@ -19,7 +20,7 @@ use ServerHandler\Docker\DockerContainerInstance;
 class Queue
 {
 	/**
-	 * @string
+	 * @var int
 	 */
 	private $id;
 	/**
@@ -66,7 +67,7 @@ class Queue
 			$this->startServer();
 		} elseif (count($this->players) === $this->gamemode->getMinimum()) {
 			$this->tick = 60;
-			$this->ticker = Loader::getInstance()->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currenttick): void {
+			$this->ticker = Loader::getInstance()->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
 				$this->tick();
 			}), 20);
 		}
@@ -82,7 +83,7 @@ class Queue
 		Output::send($this->players, "queue-leave-other", ["{player}" => $player->getName(), "{current}" => count($this->players), "{max}" => $this->gamemode->getCapacity()]);
 		if (count($this->players) < $this->gamemode->getMinimum()) {
 			$this->stopServer();
-			if(isset($this->ticker)){
+			if (isset($this->ticker)) {
 				$this->ticker->cancel();
 			}
 			if ($this->gamemode->getQueue() !== $this) {
@@ -99,7 +100,7 @@ class Queue
 	 * @param Player $player
 	 * @return bool
 	 */
-	public function contains(Player $player):bool
+	public function contains(Player $player): bool
 	{
 		return isset($this->players[$player->getName()]);
 	}
@@ -107,15 +108,15 @@ class Queue
 	/**
 	 * @return Gamemode
 	 */
-	public function getGamemode():Gamemode
+	public function getGamemode(): Gamemode
 	{
 		return $this->gamemode;
 	}
 
 	/**
-	 * @return string
+	 * @return int
 	 */
-	public function getId(): string
+	public function getId(): int
 	{
 		return $this->id;
 	}
@@ -123,7 +124,7 @@ class Queue
 	/**
 	 * @return int
 	 */
-	public function getSize():int
+	public function getSize(): int
 	{
 		return count($this->players);
 	}
@@ -131,7 +132,8 @@ class Queue
 	public function tick(): void
 	{
 		/** @noinspection PhpExpressionResultUnusedInspection */
-		$_ENV;
+		//TODO: Test...
+		$_ENV; //why????
 		switch ($this->tick) {
 			case 60:
 			case 30:
@@ -157,7 +159,7 @@ class Queue
 	{
 		$this->tick = 11;
 		if (!isset($this->ticker)) {
-			$this->ticker = Loader::getInstance()->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currenttick): void {
+			$this->ticker = Loader::getInstance()->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
 				$this->tick();
 			}), 20);
 		}
@@ -175,7 +177,7 @@ class Queue
 
 	public function stopServer(): void
 	{
-		if (!empty($this->server)) {
+		if (isset($this->server)) {
 			$this->server->stop();
 		}
 	}
@@ -184,7 +186,6 @@ class Queue
 	{
 		if (!isset($this->server)) {
 			Server::getInstance()->getLogger()->critical("Container not available! Shutting down...");
-			Loader::getInstance()->setEnabled(false);
 			return;
 		}
 		QueueManager::unbind($this);
@@ -197,11 +198,11 @@ class Queue
 			}
 			$parties = [];
 			foreach (array_unique($partyData) as $party) {
-				$members = array_keys($partyData, $party);
+				$members = array_keys($partyData, $party, true);
 				shuffle($members);
 				$parties[$party] = $members;
 			}
-			usort($parties, static function ($a, $b) {
+			usort($parties, static function ($a, $b): int {
 				return count($b) - count($a);
 			});
 			$teams = array_fill(0, $this->gamemode->getTeamCount(), []);
@@ -212,29 +213,29 @@ class Queue
 					$teams[$current][] = $parties[0][0];
 					$space[$current]--;
 					unset($parties[0][0]);
-					if (empty($parties[0])) {
+					if ($parties[0] === []) {
 						unset($parties[0]);
 						$parties = array_values($parties);
-						$current = array_keys($space, max($space))[0];
+						$current = array_keys($space, max($space), true)[0];
 					} else {
 						$parties[0] = array_values($parties[0]);
 					}
 				} else {
-					$current = array_keys($space, max($space))[0];
-					usort($parties, static function ($a, $b) {
+					$current = array_keys($space, max($space), true)[0];
+					usort($parties, static function ($a, $b): int {
 						return count($b) - count($a);
 					});
 				}
 			}
 			if (count($teams[1]) === 0) {
-				$chunks = array_chunk($teams[0], ceil(count($teams[0]) / 2));
+				$chunks = array_chunk($teams[0], (int) ceil(count($teams[0]) / 2));
 				$teams[0] = $chunks[0];
 				$teams[1] = $chunks[1];
 			}
 			foreach ($teams as $team) {
 				$packet = new TeamPacket();
 				$packet->team = $team;
-				StarGateAtlantis::getInstance()->forwardPacket($this->server->getName(), "default", $packet);
+				StarGateUtil::sendTo($this->server->getName(), $packet);
 			}
 		}
 		foreach ($this->players as $player) {

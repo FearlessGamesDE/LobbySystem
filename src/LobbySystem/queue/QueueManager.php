@@ -2,11 +2,12 @@
 
 namespace LobbySystem\queue;
 
-use alemiz\sga\StarGateAtlantis;
 use LobbySystem\gamemode\FreeGamemode;
-use LobbySystem\Gamemode\Gamemode;
+use LobbySystem\gamemode\Gamemode;
 use LobbySystem\Loader;
 use LobbySystem\party\PartyManager;
+use LobbySystem\utils\PlayerCache;
+use LobbySystem\utils\StarGateUtil;
 use LobbySystem\utils\Output;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
@@ -23,11 +24,10 @@ class QueueManager
 	{
 		Server::getInstance()->getPluginManager()->registerEvents(new QueueHandler(), Loader::getInstance());
 	}
-	
+
 	/**
-	 * @param Player $player
+	 * @param Player   $player
 	 * @param Gamemode $gamemode
-	 * @noinspection PhpUnusedParameterInspection
 	 */
 	public static function add(Player $player, Gamemode $gamemode): void
 	{
@@ -44,36 +44,28 @@ class QueueManager
 			Output::send($player, "party-to-big", [], "party-prefix");
 			return;
 		}
-		$players = $party->getSize();
 		foreach ($party->getContents() as $p) {
 			if (($pl = Server::getInstance()->getPlayerExact($p)) instanceof Player) {
 				$old = self::getQueueOf($pl);
 				if ($old instanceof Queue) {
 					$old->remove($pl);
 				}
-				$players--;
-				if ($players === 0) {
-					$queue = $gamemode->getQueue($party->getSize());
-					if ($queue instanceof Queue) {
-						foreach ($party->getContents() as $pla) {
-							$queue->add(Server::getInstance()->getPlayerExact($pla));
-						}
-					}
-				}
+			} elseif (PlayerCache::isOnline($p)) {
+				StarGateUtil::transferPlayer($p, "lobby");
+				Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(static function () use ($player, $gamemode): void {
+					self::add($player, $gamemode);
+				}), 40);
+				return;
 			} else {
-				StarGateAtlantis::getInstance()->isOnline($p, static function (string $response) use (&$players, $player, $p, $gamemode) {
-					if ($response === "false") {
-						Output::send($player, "party-offline", ["{player}" => $p], "party-prefix");
-					} else {
-						$players--;
-						StarGateAtlantis::getInstance()->transferPlayer($p, "lobby");
-						if ($players === 0) {
-							Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(static function (int $currentTick) use ($player, $gamemode) : void {
-								self::add($player, $gamemode);
-							}), 20 * 5);
-						}
-					}
-				});
+				Output::send($player, "party-offline", ["{player}" => $p], "party-prefix");
+				return;
+			}
+		}
+		$queue = $gamemode->getQueue($party->getSize());
+		foreach ($party->getContents() as $pla) {
+			$play = Server::getInstance()->getPlayerExact($pla);
+			if ($play instanceof Player) {
+				$queue->add($play);
 			}
 		}
 	}
@@ -104,10 +96,10 @@ class QueueManager
 	}
 
 	/**
-	 * @param string $id
+	 * @param int $id
 	 * @return Queue
 	 */
-	public static function get(string $id): Queue
+	public static function get(int $id): Queue
 	{
 		return self::$queues[$id];
 	}

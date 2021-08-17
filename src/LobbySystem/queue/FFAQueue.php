@@ -2,9 +2,8 @@
 
 namespace LobbySystem\queue;
 
-use alemiz\sga\StarGateAtlantis;
-use LobbySystem\gamemode\Gamemode;
 use LobbySystem\Loader;
+use LobbySystem\utils\StarGateUtil;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -13,24 +12,18 @@ use UnexpectedValueException;
 class FFAQueue extends Queue
 {
 	/**
-	 * @var Gamemode
-	 */
-	private $gamemode;
-
-	/**
 	 * @param Player $player
-	 * @noinspection PhpUnusedParameterInspection
 	 */
 	public function add(Player $player): void
 	{
 		if (!isset($this->server)) {
 			$this->startServer();
 		} elseif (!$this->server->isRunning()) {
-			Server::getInstance()->getAsyncPool()->submitTask(new StartFFAServerTask($this->gamemode->getId()));
+			Server::getInstance()->getAsyncPool()->submitTask(new StartFFAServerTask($this->getGamemode()->getId()));
 		}
 		$name = $player->getName();
-		Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($name): void {
-			StarGateAtlantis::getInstance()->transferPlayer($name, $this->gamemode->getId());
+		Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($name): void {
+			StarGateUtil::transferPlayer($name, $this->getGamemode()->getId());
 		}), 20 * 10);
 	}
 
@@ -39,7 +32,7 @@ class FFAQueue extends Queue
 	 */
 	public function remove(Player $player): void
 	{
-		throw new UnexpectedValueException($this->gamemode->getId() . " is not startable");
+		throw new UnexpectedValueException($this->getGamemode()->getId() . " is not startable");
 	}
 
 	/**
@@ -52,14 +45,6 @@ class FFAQueue extends Queue
 	}
 
 	/**
-	 * @return Gamemode
-	 */
-	public function getGamemode(): Gamemode
-	{
-		return $this->gamemode;
-	}
-
-	/**
 	 * @return int
 	 */
 	public function getSize(): int
@@ -69,21 +54,21 @@ class FFAQueue extends Queue
 
 	public function tick(): void
 	{
-		throw new UnexpectedValueException($this->gamemode->getId() . " is not startable");
+		throw new UnexpectedValueException($this->getGamemode()->getId() . " is not startable");
 	}
 
 	public function startServer(): void
 	{
-		throw new UnexpectedValueException($this->gamemode->getId() . " is not startable");
+		throw new UnexpectedValueException($this->getGamemode()->getId() . " is not startable");
 	}
 
 	public function stopServer(): void
 	{
-		throw new UnexpectedValueException($this->gamemode->getId() . " is not startable");
+		throw new UnexpectedValueException($this->getGamemode()->getId() . " is not startable");
 	}
 
 	public function teleport(): void
 	{
-		throw new UnexpectedValueException($this->gamemode->getId() . " is not startable");
+		throw new UnexpectedValueException($this->getGamemode()->getId() . " is not startable");
 	}
 }

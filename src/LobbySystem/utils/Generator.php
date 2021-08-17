@@ -5,15 +5,20 @@ namespace LobbySystem\utils;
 
 use Exception;
 use LobbySystem\queue\QueueManager;
+use pocketmine\utils\AssumptionFailedError;
 
 class Generator
 {
 	/**
-	 * @return string
+	 * @return int
 	 */
-	public static function generateQueueId(): string
+	public static function generateQueueId(): int
 	{
-		$id = substr(time(), -3);
+		try {
+			$id = random_int(0, 999);
+		}catch (Exception $exception){
+			throw new AssumptionFailedError("999 is greater than 0...");
+		}
 		try {
 			QueueManager::get($id);
 		} catch (Exception $exception) {

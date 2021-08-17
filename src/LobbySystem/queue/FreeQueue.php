@@ -3,23 +3,17 @@
 namespace LobbySystem\queue;
 
 use alemiz\sga\StarGateAtlantis;
-use LobbySystem\gamemode\Gamemode;
 use pocketmine\player\Player;
 use UnexpectedValueException;
 
 class FreeQueue extends Queue
 {
 	/**
-	 * @var Gamemode
-	 */
-	private $gamemode;
-
-	/**
 	 * @param Player $player
 	 */
 	public function add(Player $player): void
 	{
-		StarGateAtlantis::getInstance()->transferPlayer($player, $this->gamemode->getId());
+		StarGateAtlantis::getInstance()->transferPlayer($player, $this->getGamemode()->getId());
 	}
 
 	/**
@@ -27,7 +21,7 @@ class FreeQueue extends Queue
 	 */
 	public function remove(Player $player): void
 	{
-		throw new UnexpectedValueException($this->gamemode->getId() . " is not startable");
+		throw new UnexpectedValueException($this->getGamemode()->getId() . " is not startable");
 	}
 
 	/**
@@ -40,14 +34,6 @@ class FreeQueue extends Queue
 	}
 
 	/**
-	 * @return Gamemode
-	 */
-	public function getGamemode(): Gamemode
-	{
-		return $this->gamemode;
-	}
-
-	/**
 	 * @return int
 	 */
 	public function getSize(): int
@@ -57,21 +43,21 @@ class FreeQueue extends Queue
 
 	public function tick(): void
 	{
-		throw new UnexpectedValueException($this->gamemode->getId() . " is not startable");
+		throw new UnexpectedValueException($this->getGamemode()->getId() . " is not startable");
 	}
 
 	public function startServer(): void
 	{
-		throw new UnexpectedValueException($this->gamemode->getId() . " is not startable");
+		throw new UnexpectedValueException($this->getGamemode()->getId() . " is not startable");
 	}
 
 	public function stopServer(): void
 	{
-		throw new UnexpectedValueException($this->gamemode->getId() . " is not startable");
+		throw new UnexpectedValueException($this->getGamemode()->getId() . " is not startable");
 	}
 
 	public function teleport(): void
 	{
-		throw new UnexpectedValueException($this->gamemode->getId() . " is not startable");
+		throw new UnexpectedValueException($this->getGamemode()->getId() . " is not startable");
 	}
 }
