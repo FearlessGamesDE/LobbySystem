@@ -17,7 +17,7 @@ use UnexpectedValueException;
 class StarGateUtil
 {
 	/**
-	 * @var array
+	 * @var string[]
 	 */
 	private static $servers = [];
 	/**
