@@ -3,14 +3,14 @@
 namespace LobbySystem\utils;
 
 use LobbySystem\Loader;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 
 class Output
 {
 	/**
-	 * @var mixed[]
+	 * @var string[]
 	 */
 	private static $messages;
 
@@ -29,9 +29,9 @@ class Output
 
 	/**
 	 * @param Player|Player[]|string|string[] $player
-	 * @param string $key
-	 * @param array $args
-	 * @param string $prefix
+	 * @param string                          $key
+	 * @param string[]                        $args
+	 * @param string                          $prefix
 	 */
 	public static function send($player, string $key, array $args = [], string $prefix = ""): void
 	{
@@ -48,8 +48,8 @@ class Output
 
 	/**
 	 * @param Player|Player[]|string|string[] $player
-	 * @param string $key
-	 * @param array $args
+	 * @param string                          $key
+	 * @param string[]                        $args
 	 */
 	public static function important($player, string $key, array $args = []): void
 	{
@@ -65,20 +65,20 @@ class Output
 	}
 
 	/**
-	 * @param string $key
-	 * @param array $args
-	 * @return mixed|string|string[]
+	 * @param string   $key
+	 * @param string[] $args
+	 * @return string
 	 */
-	public static function replace(string $key, array $args = [])
+	public static function replace(string $key, array $args = []): string
 	{
 		return str_replace(array_keys($args), array_values($args), self::translate($key));
 	}
 
 	/**
 	 * @param string $key
-	 * @return mixed|string
+	 * @return string
 	 */
-	public static function translate(string $key)
+	public static function translate(string $key): string
 	{
 		return self::$messages[$key] ?? self::$messages["message-" . $key] ?? $key;
 	}
