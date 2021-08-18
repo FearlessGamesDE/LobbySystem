@@ -1,5 +1,8 @@
 <?php
-/** @noinspection PhpUnused */
+/**
+ * @noinspection PhpUnused
+ * @noinspection UnknownInspectionInspection
+ */
 
 namespace LobbySystem\utils;
 
@@ -1578,8 +1581,8 @@ class Color
 	 * @param string $hex
 	 * @return int
 	 */
-	public static function toDecimal(string $hex):int
+	public static function toDecimal(string $hex): int
 	{
-		return hexdec(str_replace("#", "", $hex));
+		return (int) hexdec(str_replace("#", "", $hex));
 	}
 }
