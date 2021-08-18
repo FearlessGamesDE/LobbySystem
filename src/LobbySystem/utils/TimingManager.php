@@ -2,7 +2,7 @@
 
 namespace LobbySystem\utils;
 
-use alemiz\sga\StarGateAtlantis;
+use JsonException;
 use LobbySystem\Loader;
 use pocketmine\Server;
 use pocketmine\timings\TimingsHandler;
@@ -41,7 +41,11 @@ class TimingManager
 			return;
 		}
 
-		$result = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+		try {
+			$result = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+		}catch (JsonException $exception){
+			$result = [];
+		}
 		if (is_array($result) && isset($result["id"])) {
 			DiscordWebhook::send(Output::translate("timingURL"), "", [DiscordWebhook::buildEmbed("Timing Record", "", Color::GREEN, $result[1][0]["location"], DiscordWebhook::buildAuthor(Loader::getServerName()), [], [], [], [], time())]);
 		} else {
