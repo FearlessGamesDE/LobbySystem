@@ -18,24 +18,21 @@ class TimingManager
 
 	public static function send(): void
 	{
-		$fileTimings = fopen("php://temp", "r+b");
+		$data = [
+			"browser" => $agent = StarGateUtil::getClient()->getName() . " " . Server::getInstance()->getName() . " " . Server::getInstance()->getPocketMineVersion(),
+			"data" => implode(PHP_EOL, TimingsHandler::printTimings())
+		];
 
-		TimingsHandler::printTimings($fileTimings);
-
-		fseek($fileTimings, 0);
-		$data = stream_get_contents($fileTimings);
-		fclose($fileTimings);
-
-		$host = Server::getInstance()->getProperty("timings.host", "timings.aikar.co");
+		$host = Server::getInstance()->getConfigGroup()->getConfigString("timings.host", "timings.pmmp.io");
 
 		try {
-			$result = Internet::simpleCurl("https://$host/post", 10, [], [
+			$response = Internet::simpleCurl("https://$host/?upload=true", 10, [], [
 				CURLOPT_HTTPHEADER => [
-					"User-Agent: Spigot/" . Server::getInstance()->getName() . "/" . Server::getInstance()->getPocketMineVersion(), //Spigot just allows access
+					"User-Agent: $agent",
 					"Content-Type: application/x-www-form-urlencoded"
 				],
 				CURLOPT_POST => true,
-				CURLOPT_POSTFIELDS => gzencode($data),
+				CURLOPT_POSTFIELDS => http_build_query($data),
 				CURLOPT_AUTOREFERER => false,
 				CURLOPT_FOLLOWLOCATION => false
 			]);
@@ -44,10 +41,11 @@ class TimingManager
 			return;
 		}
 
-		if (isset($result[1][0]["location"])) {
-			DiscordWebhook::send(Output::translate("timingURL"), "", [DiscordWebhook::buildEmbed("Timing Record", "", Color::GREEN, $result[1][0]["location"], DiscordWebhook::buildAuthor(Loader::$serverName), [], [], [], [], time())]);
+		$result = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+		if (is_array($result) && isset($result["id"])) {
+			DiscordWebhook::send(Output::translate("timingURL"), "", [DiscordWebhook::buildEmbed("Timing Record", "", Color::GREEN, $result[1][0]["location"], DiscordWebhook::buildAuthor(Loader::getServerName()), [], [], [], [], time())]);
 		} else {
-			DiscordWebhook::send(Output::translate("timingURL"), "", [DiscordWebhook::buildEmbed("Timing Record Error", $result[0] ?? "", Color::RED, "", DiscordWebhook::buildAuthor(Loader::$serverName), [], [], [], [], time())]);
+			DiscordWebhook::send(Output::translate("timingURL"), "", [DiscordWebhook::buildEmbed("Timing Record Error", (string) $response->getCode(), Color::RED, "", DiscordWebhook::buildAuthor(Loader::getServerName()), [], [], [], [], time())]);
 		}
 	}
 }
