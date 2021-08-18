@@ -2,13 +2,12 @@
 
 namespace LobbySystem\area;
 
-use InvalidArgumentException;
-use LobbySystem\utils\LobbyLevel;
+use LobbySystem\utils\LobbyWorld;
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
-use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
-use pocketmine\Player;
+use pocketmine\player\Player;
+use pocketmine\world\Position;
 
 abstract class Area
 {
@@ -30,14 +29,11 @@ abstract class Area
 	private $players;
 
 	/**
-	 * Areana constructor.
+	 * Area constructor.
 	 * @param string $name
 	 */
 	public function __construct(string $name)
 	{
-		if(AreaManager::checkOverlap($this->boundingBox)){
-			throw new InvalidArgumentException("Area $name is overlapping with another Area");
-		}
 		$this->name = $name;
 		$data = AreaManager::register($this);
 		$this->spawn = $data[0];
@@ -88,25 +84,31 @@ abstract class Area
 
 	/**
 	 * @param Player $player
-	 * @param Block $block
+	 * @param Block  $block
 	 * @return bool whether the Player is allowed to place this Block
 	 */
 	abstract public function onPlace(Player $player, Block $block): bool;
 
 	/**
 	 * @param Player $player
-	 * @param Block $block
+	 * @param Block  $block
 	 * @return bool whether the Player is allowed to break this Block
 	 */
 	abstract public function onBreak(Player $player, Block $block): bool;
 
 	/**
-	 * @param int $type
-	 * @param Player $player
+	 * @param int         $type
+	 * @param Player      $player
 	 * @param Entity|null $damager
 	 * @return bool whether the Player is allowed to get damaged
 	 */
 	abstract public function onDamage(int $type, Player $player, ?Entity $damager): bool;
+
+	/**
+	 * @param Player $player
+	 * @return bool whether the Player is allowed to get exhausted
+	 */
+	abstract public function onExhaust(Player $player): bool;
 
 	/**
 	 * @return Player[]
@@ -147,8 +149,7 @@ abstract class Area
 	public function kickPlayer(Player $player): void
 	{
 		if ($this->containsPlayer($player)) {
-			$this->removePlayer($player);
-			$player->teleport(LobbyLevel::get()->getSafeSpawn());
+			$player->teleport(LobbyWorld::get()->getSafeSpawn());
 		}
 	}
 }

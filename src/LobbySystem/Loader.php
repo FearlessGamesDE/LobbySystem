@@ -2,11 +2,10 @@
 
 namespace LobbySystem;
 
-use alemiz\sga\StarGateAtlantis;
+use LobbySystem\area\AreaManager;
 use LobbySystem\command\CommandManager;
 use LobbySystem\gamemode\GamemodeManager;
 use LobbySystem\packets\server\DisablePacket;
-use LobbySystem\packets\server\EnablePacket;
 use LobbySystem\packets\PacketHandler;
 use LobbySystem\queue\QueueManager;
 use LobbySystem\utils\ErrorReporter;
@@ -48,6 +47,7 @@ class Loader extends PluginBase
 			self::$isMaster = true;
 			GamemodeManager::load();
 			QueueManager::load();
+			AreaManager::load();
 		}
 
 		$this->getScheduler()->scheduleRepeatingTask(new ClosureTask(static function (): void {

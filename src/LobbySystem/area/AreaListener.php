@@ -2,15 +2,17 @@
 
 namespace LobbySystem\area;
 
-use LobbySystem\utils\LobbyLevel;
+use LobbySystem\utils\LobbyWorld;
+use LobbySystem\utils\PlayerUtils;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerDeathEvent;
+use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerMoveEvent;
-use pocketmine\Player;
+use pocketmine\player\Player;
 
 class AreaListener implements Listener
 {
@@ -26,19 +28,45 @@ class AreaListener implements Listener
 				if ($area->onEnter($event->getPlayer())) {
 					$area->addPlayer($event->getPlayer());
 				} else {
-					$event->setCancelled();
+					$event->cancel();
 				}
-				return;
-			}
-
-			if (!$to && $from) {
+			} elseif (!$to && $from) {
 				if ($area->onLeave($event->getPlayer())) {
 					$area->removePlayer($event->getPlayer());
+					PlayerUtils::recoverPlayer($event->getPlayer());
 					//TODO: send inv
 				} else {
-					$event->setCancelled();
+					$event->cancel();
 				}
-				return;
+			}
+		}
+	}
+
+	/**
+	 * @param EntityTeleportEvent $event
+	 */
+	public function onTeleport(EntityTeleportEvent $event): void
+	{
+		$player = $event->getEntity();
+		if ($player instanceof Player) {
+			foreach (AreaManager::getAreas() as $area) {
+				$from = $area->getBoundingBox()->isVectorInside($event->getFrom());
+				$to = $area->getBoundingBox()->isVectorInside($event->getTo());
+				if ($to && !$from) {
+					if ($area->onEnter($player)) {
+						$area->addPlayer($player);
+					} else {
+						$event->cancel();
+					}
+				} elseif (!$to && $from) {
+					if ($area->onLeave($player)) {
+						$area->removePlayer($player);
+						PlayerUtils::recoverPlayer($player);
+						//TODO: send inv
+					} else {
+						$event->cancel();
+					}
+				}
 			}
 		}
 	}
@@ -49,15 +77,15 @@ class AreaListener implements Listener
 	public function onPlace(BlockPlaceEvent $event): void
 	{
 		foreach (AreaManager::getAreas() as $area) {
-			if ($area->containsPlayer($event->getPlayer()) && $area->getBoundingBox()->isVectorInside($event->getBlock())) {
+			if ($area->containsPlayer($event->getPlayer()) && $area->getBoundingBox()->isVectorInside($event->getBlock()->getPos())) {
 				if (!$area->onPlace($event->getPlayer(), $event->getBlock())) {
-					$event->setCancelled();
+					$event->cancel();
 				}
 				return;
 			}
 		}
 
-		$event->setCancelled();
+		$event->cancel();
 	}
 
 	/**
@@ -66,15 +94,15 @@ class AreaListener implements Listener
 	public function onBreak(BlockBreakEvent $event): void
 	{
 		foreach (AreaManager::getAreas() as $area) {
-			if ($area->containsPlayer($event->getPlayer()) && $area->getBoundingBox()->isVectorInside($event->getBlock())) {
+			if ($area->containsPlayer($event->getPlayer()) && $area->getBoundingBox()->isVectorInside($event->getBlock()->getPos())) {
 				if (!$area->onBreak($event->getPlayer(), $event->getBlock())) {
-					$event->setCancelled();
+					$event->cancel();
 				}
 				return;
 			}
 		}
 
-		$event->setCancelled();
+		$event->cancel();
 	}
 
 	/**
@@ -84,15 +112,15 @@ class AreaListener implements Listener
 	{
 		$player = $event->getEntity();
 		if ($player instanceof Player) {
-			if($event->getCause() === EntityDamageEvent::CAUSE_VOID || $event->getFinalDamage() >= $player->getHealth()){
-				$event->setCancelled();
+			if ($event->getCause() === EntityDamageEvent::CAUSE_VOID || $event->getFinalDamage() >= $player->getHealth()) {
+				$event->cancel();
+				PlayerUtils::recoverPlayer($player);
 				foreach (AreaManager::getAreas() as $area) {
 					if ($area->containsPlayer($player)) {
 						if ($area->onDeath($player)) {
 							$player->teleport($area->getSpawn());
 						} else {
-							$area->removePlayer($player);
-							$player->teleport(LobbyLevel::get()->getSafeSpawn());
+							$player->teleport(LobbyWorld::get()->getSafeSpawn());
 							//TODO: send inv
 						}
 						return;
@@ -103,13 +131,31 @@ class AreaListener implements Listener
 			foreach (AreaManager::getAreas() as $area) {
 				if ($area->containsPlayer($player)) {
 					if (!$area->onDamage($event->getCause(), $player, $event instanceof EntityDamageByEntityEvent ? $event->getDamager() : null)) {
-						$event->setCancelled();
+						$event->cancel();
 					}
 					return;
 				}
 			}
 		}
 
-		$event->setCancelled();
+		$event->cancel();
+	}
+
+	/**
+	 * @param PlayerExhaustEvent $event
+	 */
+	public function onExhaust(PlayerExhaustEvent $event): void
+	{
+		$player = $event->getPlayer();
+		if ($player instanceof Player) {
+			foreach (AreaManager::getAreas() as $area) {
+				if ($area->containsPlayer($player) && !$area->onExhaust($player)) {
+					$event->cancel();
+				}
+
+			}
+
+			$event->cancel();
+		}
 	}
 }
