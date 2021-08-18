@@ -190,10 +190,10 @@ class PacketHandler implements Listener
 			case PacketPool::PARTY_INFO_LIST:
 				/** @var ListPacket $packet */
 				$owner = Output::replace($packet->online[$packet->owner] ? "online" : "offline", ["{player}" => $packet->owner]);
-				$moderators = array_map(static function ($player) use ($packet) {
+				$moderators = array_map(static function ($player) use ($packet): string {
 					return Output::replace($packet->online[$player] ? "online" : "offline", ["{player}" => $player]);
 				}, $packet->moderators);
-				$members = array_map(static function ($player) use ($packet) {
+				$members = array_map(static function ($player) use ($packet): string {
 					return Output::replace($packet->online[$player] ? "online" : "offline", ["{player}" => $player]);
 				}, $packet->members);
 				Output::send($packet->player, "party-list", ["{owner}" => $owner, "{moderators}" => implode(", ", $moderators), "{members}" => implode(", ", $members)], "party-prefix");

@@ -12,6 +12,10 @@ class ErrorReporter
 	{
 		$log = file(Server::getInstance()->getDataPath() . "server.log");
 
+		if ($log === false) {
+			return;
+		}
+
 		$errors = [];
 		$current = false;
 
@@ -58,7 +62,7 @@ class ErrorReporter
 
 	public static function load(): void
 	{
-		Loader::getInstance()->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
+		Loader::getInstance()->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
 			self::send();
 		}), 20 * 60);
 	}

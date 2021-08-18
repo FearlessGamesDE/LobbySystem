@@ -59,9 +59,9 @@ class Queue
 	 */
 	public function add(Player $player): void
 	{
-		Output::send($this->players, "queue-join-other", ["{player}" => $player->getName(), "{current}" => count($this->players) + 1, "{max}" => $this->gamemode->getCapacity()]);
+		Output::send($this->players, "queue-join-other", ["{player}" => $player->getName(), "{current}" => (string) (count($this->players) + 1), "{max}" => (string) $this->gamemode->getCapacity()]);
 		$this->players[$player->getName()] = $player;
-		Output::send($player, "queue-join", ["{game}" => $this->gamemode->getDisplayName(), "{current}" => count($this->players), "{max}" => $this->gamemode->getCapacity()]);
+		Output::send($player, "queue-join", ["{game}" => $this->gamemode->getDisplayName(), "{current}" => (string) count($this->players), "{max}" => (string) $this->gamemode->getCapacity()]);
 		if ($this->tick > 10 && count($this->players) === $this->gamemode->getCapacity()) {
 			QueueManager::unbind($this);
 			$this->startServer();
@@ -80,7 +80,7 @@ class Queue
 	{
 		Output::send($player, "queue-leave", ["{game}" => $this->gamemode->getDisplayName()]);
 		unset($this->players[$player->getName()]);
-		Output::send($this->players, "queue-leave-other", ["{player}" => $player->getName(), "{current}" => count($this->players), "{max}" => $this->gamemode->getCapacity()]);
+		Output::send($this->players, "queue-leave-other", ["{player}" => $player->getName(), "{current}" => (string) count($this->players), "{max}" => (string) $this->gamemode->getCapacity()]);
 		if (count($this->players) < $this->gamemode->getMinimum()) {
 			$this->stopServer();
 			if (isset($this->ticker)) {
@@ -131,8 +131,11 @@ class Queue
 
 	public function tick(): void
 	{
-		/** @noinspection PhpExpressionResultUnusedInspection */
 		//TODO: Test...
+		/**
+		 * @noinspection PhpExpressionResultUnusedInspection
+		 * @phpstan-ignore-next-line
+		 */
 		$_ENV; //why????
 		switch ($this->tick) {
 			case 60:
@@ -144,7 +147,7 @@ class Queue
 			case 3:
 			case 2:
 			case 1:
-				Output::send($this->players, "start-in", ["{seconds}" => $this->tick]);
+				Output::send($this->players, "start-in", ["{seconds}" => (string) $this->tick]);
 				break;
 			case 11:
 				$this->startServer();

@@ -109,7 +109,7 @@ class Gamemode
 	 */
 	public function removeQueue(Queue $queue): void
 	{
-		unset($this->queues[array_search($queue, $this->queues)]);
+		unset($this->queues[array_search($queue, $this->queues, true)]);
 	}
 
 	/**
