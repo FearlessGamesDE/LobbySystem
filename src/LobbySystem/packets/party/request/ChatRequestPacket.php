@@ -2,7 +2,6 @@
 
 namespace LobbySystem\packets\party\request;
 
-use alemiz\sga\StarGateAtlantis;
 use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
 use LobbySystem\utils\StarGateUtil;

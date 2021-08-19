@@ -2,7 +2,6 @@
 
 namespace LobbySystem\party;
 
-use alemiz\sga\StarGateAtlantis;
 use LobbySystem\Loader;
 use LobbySystem\packets\party\info\DisbandPacket;
 use LobbySystem\packets\party\info\InviteExpirePacket;
