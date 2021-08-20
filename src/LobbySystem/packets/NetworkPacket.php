@@ -4,6 +4,7 @@ namespace LobbySystem\packets;
 
 use alemiz\sga\codec\StarGatePacketHandler;
 use alemiz\sga\protocol\StarGatePacket;
+use Closure;
 
 abstract class NetworkPacket extends StarGatePacket
 {
@@ -31,6 +32,32 @@ abstract class NetworkPacket extends StarGatePacket
 	public function getString(): string
 	{
 		return $this->get($this->getInt());
+	}
+
+	/**
+	 * @param array<int, mixed>     $array
+	 * @param Closure(mixed) : void $serializer
+	 */
+	public function putArray(array $array, Closure $serializer): void
+	{
+		$this->putInt(count($array));
+		foreach ($array as $element) {
+			$serializer($element);
+		}
+	}
+
+	/**
+	 * @param Closure() : mixed $serializer
+	 * @return string[]
+	 */
+	public function getArray(Closure $serializer): array
+	{
+		$count = $this->getInt();
+		$array = [];
+		for ($i = 0; $i < $count; $i++) {
+			$array[] = $serializer();
+		}
+		return $array;
 	}
 
 	/**
