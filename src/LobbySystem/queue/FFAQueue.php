@@ -2,11 +2,9 @@
 
 namespace LobbySystem\queue;
 
-use LobbySystem\Loader;
+use LobbySystem\server\ServerPool;
 use LobbySystem\utils\StarGateUtil;
 use pocketmine\player\Player;
-use pocketmine\scheduler\ClosureTask;
-use pocketmine\Server;
 use UnexpectedValueException;
 
 class FFAQueue extends Queue
@@ -17,14 +15,13 @@ class FFAQueue extends Queue
 	public function add(Player $player): void
 	{
 		if (!isset($this->server)) {
-			$this->startServer();
-		} elseif (!$this->server->isRunning()) {
-			Server::getInstance()->getAsyncPool()->submitTask(new StartFFAServerTask($this->getGamemode()->getId()));
+			$this->server = ServerPool::request($this->getGamemode()->getId(), $this);
 		}
-		$name = $player->getName();
-		Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($name): void {
-			StarGateUtil::transferPlayer($name, $this->getGamemode()->getId());
-		}), 20 * 10);
+		if ($this->server->ready()) {
+			StarGateUtil::transferPlayer($player->getName(), $this->getGamemode()->getId());
+		} else {
+			$this->players[$player->getName()] = $player;
+		}
 	}
 
 	/**
@@ -32,16 +29,7 @@ class FFAQueue extends Queue
 	 */
 	public function remove(Player $player): void
 	{
-		throw new UnexpectedValueException($this->getGamemode()->getId() . " is not startable");
-	}
-
-	/**
-	 * @param Player $player
-	 * @return bool
-	 */
-	public function contains(Player $player): bool
-	{
-		return false;
+		unset($this->players[$player->getName()]);
 	}
 
 	/**
@@ -52,9 +40,17 @@ class FFAQueue extends Queue
 		return 0;
 	}
 
+	public function ready(): void
+	{
+		foreach ($this->players as $player) {
+			StarGateUtil::transferPlayer($player->getName(), $this->getGamemode()->getId());
+		}
+		$this->players = [];
+	}
+
 	public function tick(): void
 	{
-		throw new UnexpectedValueException($this->getGamemode()->getId() . " is not startable");
+		//used by start command while waiting
 	}
 
 	public function startServer(): void

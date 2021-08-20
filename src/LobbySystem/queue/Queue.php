@@ -6,8 +6,10 @@ use alemiz\sga\StarGateAtlantis;
 use LobbySystem\gamemode\Gamemode;
 use LobbySystem\gamemode\TeamGamemode;
 use LobbySystem\Loader;
-use LobbySystem\packets\server\TeamPacket;
+use LobbySystem\packets\server\InitializePacket;
 use LobbySystem\party\PartyManager;
+use LobbySystem\server\ServerPool;
+use LobbySystem\server\ServerPoolEntry;
 use LobbySystem\utils\Generator;
 use LobbySystem\utils\Output;
 use LobbySystem\utils\StarGateUtil;
@@ -30,7 +32,7 @@ class Queue
 	/**
 	 * @var Player[]
 	 */
-	private $players = [];
+	protected $players = [];
 	/**
 	 * @var int
 	 */
@@ -40,9 +42,13 @@ class Queue
 	 */
 	private $ticker;
 	/**
-	 * @var DockerContainerInstance
+	 * @var ServerPoolEntry
 	 */
 	protected $server;
+	/**
+	 * @var bool
+	 */
+	protected $ready = false;
 
 	/**
 	 * Queue constructor.
@@ -167,32 +173,32 @@ class Queue
 			}), 20);
 		}
 
-		Server::getInstance()->getAsyncPool()->submitTask(new StartServerTask($this->id, $this->gamemode->getId(), $this->gamemode->getMinigame()->getId()));
+		$this->server = ServerPool::request($this->id, $this);
 	}
 
-	/**
-	 * @param DockerContainerInstance $server
-	 */
-	public function setServer(DockerContainerInstance $server): void
+	public function ready(): void
 	{
-		$this->server = $server;
+		$this->ready = true;
 	}
 
 	public function stopServer(): void
 	{
 		if (isset($this->server)) {
 			$this->server->stop();
+			ServerPool::clean($this->server->getId());
 		}
 	}
 
 	public function teleport(): void
 	{
-		if (!isset($this->server)) {
+		if (!isset($this->server) || !$this->ready) {
 			Server::getInstance()->getLogger()->critical("Container not available! Shutting down...");
+			ServerPool::clean($this->id);
 			return;
 		}
 		QueueManager::unbind($this);
 		$this->ticker->cancel();
+		$packet = new InitializePacket();
 		if ($this->gamemode instanceof TeamGamemode) {
 			$partyData = [];
 			foreach ($this->players as $player) {
@@ -235,14 +241,17 @@ class Queue
 				$teams[0] = $chunks[0];
 				$teams[1] = $chunks[1];
 			}
-			foreach ($teams as $team) {
-				$packet = new TeamPacket();
-				$packet->team = $team;
-				StarGateUtil::sendTo($this->server->getName(), $packet);
-			}
+			$packet->teams = $teams;
+			$packet->teamCount = $this->gamemode->getTeamCount();
+			$packet->teamSize = $this->gamemode->getTeamCount();
 		}
+		$packet->players = $this->players;
+		$packet->gamemodeId = $this->gamemode->getId();
+		$packet->minigame = $this->gamemode->getMinigame()->getId();
+		StarGateUtil::sendTo($this->server->getServerName(), $packet);
 		foreach ($this->players as $player) {
-			StarGateAtlantis::getInstance()->transferPlayer($player, $this->server->getName());
+			StarGateAtlantis::getInstance()->transferPlayer($player, $this->server->getServerName());
 		}
+		ServerPool::clean($this->server->getId());
 	}
 }

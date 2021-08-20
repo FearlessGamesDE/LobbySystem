@@ -1,6 +1,6 @@
 <?php
 
-namespace LobbySystem\queue;
+namespace LobbySystem\server;
 
 use Exception;
 use LobbySystem\gamemode\GamemodeManager;
@@ -28,10 +28,10 @@ class StartFFAServerTask extends AsyncTask
 	 */
 	private $port;
 
-	public function __construct(string $gamemode)
+	public function __construct(ServerPoolEntry $entry)
 	{
 		$this->start = microtime(true);
-		$this->gamemode = $gamemode;
+		$this->gamemode = $entry->getId();
 	}
 
 	public function onRun(): void
@@ -71,7 +71,7 @@ class StartFFAServerTask extends AsyncTask
 	{
 		if ($this->getResult() instanceof DockerContainerInstance) {
 			StarGateUtil::addServer($this->gamemode, 20000 + $this->port);
-			GamemodeManager::getGamemode($this->gamemode)->getQueue()->setServer($this->getResult());
+			ServerPool::get($this->gamemode)->setServer($this->getResult());
 			Server::getInstance()->getLogger()->info("Created Container " . $this->gamemode . " on 20" . $this->port . " in " . round(microtime(true) - $this->start, 3) . "s");
 		} elseif ($this->getResult() instanceof Exception) {
 			Server::getInstance()->getLogger()->critical("Error creating Container! Shutting down...");

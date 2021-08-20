@@ -4,26 +4,27 @@ namespace LobbySystem\packets\server;
 
 use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
+use LobbySystem\utils\StarGateUtil;
 
-class TeamPacket extends NetworkPacket
+class ReadyPacket extends NetworkPacket
 {
 	/**
-	 * @var string[]
+	 * @var string
 	 */
-	public $team;
+	public $serverName;
 
 	public function decodePayload(): void
 	{
-		$this->team = $this->getStringArray();
+		$this->serverName = $this->getString();
 	}
 
 	public function encodePayload(): void
 	{
-		$this->putStringArray($this->team);
+		$this->putString(StarGateUtil::getClient()->getClientName());
 	}
 
 	public function getPacketId(): int
 	{
-		return PacketPool::SERVER_TEAM;
+		return PacketPool::SERVER_READY;
 	}
 }

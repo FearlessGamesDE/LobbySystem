@@ -30,9 +30,12 @@ use LobbySystem\packets\party\request\WarpRequestPacket;
 use LobbySystem\packets\server\DisablePacket;
 use LobbySystem\packets\server\EnablePacket;
 use LobbySystem\packets\server\PlayPacket;
-use LobbySystem\packets\server\TeamPacket;
+use LobbySystem\packets\server\InitializePacket;
+use LobbySystem\packets\server\ReadyPacket;
 use LobbySystem\party\PartyManager;
 use LobbySystem\queue\QueueManager;
+use LobbySystem\server\ServerPool;
+use LobbySystem\server\VirtualServer;
 use LobbySystem\utils\Output;
 use LobbySystem\utils\PlayerCache;
 use LobbySystem\utils\StarGateUtil;
@@ -50,7 +53,8 @@ class PacketHandler implements Listener
 				new EnablePacket(),
 				new DisablePacket(),
 				new PlayPacket(),
-				new TeamPacket(),
+				new InitializePacket(),
+				new ReadyPacket(),
 				new InviteRequestPacket(),
 				new InviteExpirePacket(),
 				new InvitePacket(),
@@ -114,6 +118,14 @@ class PacketHandler implements Listener
 						}
 					}), 20 * 5);
 				}
+				break;
+			case PacketPool::SERVER_INITIALIZE: //TODO
+				/** @var InitializePacket $packet */
+				VirtualServer::init($packet);
+				break;
+			case PacketPool::SERVER_READY:
+				/** @var ReadyPacket $packet */
+				ServerPool::getAddress($packet->serverName)->serverCallback();
 				break;
 			case PacketPool::PARTY_REQUEST_INVITE:
 				/** @var InviteRequestPacket $packet */

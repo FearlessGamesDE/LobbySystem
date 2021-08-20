@@ -7,6 +7,7 @@ use LobbySystem\command\CommandManager;
 use LobbySystem\gamemode\GamemodeManager;
 use LobbySystem\packets\server\DisablePacket;
 use LobbySystem\packets\PacketHandler;
+use LobbySystem\packets\server\ReadyPacket;
 use LobbySystem\queue\QueueManager;
 use LobbySystem\utils\ErrorReporter;
 use LobbySystem\utils\Output;
@@ -48,6 +49,8 @@ class Loader extends PluginBase
 			GamemodeManager::load();
 			QueueManager::load();
 			AreaManager::load();
+		} else {
+			StarGateUtil::request(new ReadyPacket());
 		}
 
 		$this->getScheduler()->scheduleRepeatingTask(new ClosureTask(static function (): void {

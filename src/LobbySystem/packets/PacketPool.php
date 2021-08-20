@@ -12,7 +12,8 @@ class PacketPool
 	public const SERVER_DISABLE = 0x111;
 	public const SERVER_DATA = 0x113; //TODO
 	public const SERVER_PLAY = 0x114;
-	public const SERVER_TEAM = 0x115;
+	public const SERVER_INITIALIZE = 0x115;
+	public const SERVER_READY = 0x116;
 
 	/**
 	 * Party 0x120 - 0x14F

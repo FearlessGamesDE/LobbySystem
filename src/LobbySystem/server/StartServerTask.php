@@ -1,6 +1,6 @@
 <?php
 
-namespace LobbySystem\queue;
+namespace LobbySystem\server;
 
 use Exception;
 use LobbySystem\utils\Generator;
@@ -57,7 +57,7 @@ class StartServerTask extends AsyncTask
 	{
 		try {
 			ServerHandler::load();
-			$container = DockerContainer::create("pocketmine-mp", "v" . $this->id)->mapPort(20000 + $this->id, "19132/udp")->setVolume("/minecraft/Virtual/PocketMine-MP/plugins", "/plugins")->setVolume("/minecraft/Virtual/" . $this->gamemode . "/data", "/server/data")->setVolume("/minecraft/Virtual/" . $this->gamemode . "/worlds", "/server/worlds")->setVolume("/minecraft/Virtual/" . $this->minigame . "/plugins", "/server/plugins")->start();
+			$container = DockerContainer::create("pocketmine-mp", "v" . $this->id)->mapPort(20000 + $this->id, "19132/udp")->setVolume("/minecraft/virtual/PocketMine-MP/plugins", "/plugins")->setVolume("/minecraft/virtual/" . $this->gamemode . "/data", "/server/data")->setVolume("/minecraft/virtual/" . $this->gamemode . "/worlds", "/server/worlds")->setVolume("/minecraft/virtual/" . $this->minigame . "/plugins", "/server/plugins")->start();
 			$process = $container->execute("echo 'v" . $this->id . "' > /server.txt");
 			if (!$process->isSuccessful()) {
 				throw new ProcessFailedException($process);
@@ -81,7 +81,7 @@ class StartServerTask extends AsyncTask
 	{
 		if ($this->getResult() instanceof DockerContainerInstance) {
 			StarGateUtil::addServer("v" . $this->id, 20000 + $this->id);
-			QueueManager::get($this->queue)->setServer($this->getResult());
+			ServerPool::get($this->queue)->setServer($this->getResult());
 			Server::getInstance()->getLogger()->info("Created Container v" . $this->id . " on " . (20000 + $this->id) . " in " . round(microtime(true) - $this->start, 3) . "s");
 		} elseif ($this->getResult() instanceof Exception) {
 			Server::getInstance()->getLogger()->critical("Error creating Container! Shutting down...");
