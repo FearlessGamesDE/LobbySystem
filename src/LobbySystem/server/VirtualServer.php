@@ -66,6 +66,9 @@ abstract class VirtualServer
 		self::$instance->onInit();
 	}
 
+	/**
+	 * Called when server is ready to start and starts to receive players
+	 */
 	abstract public function onInit(): void;
 
 	/**
