@@ -122,4 +122,15 @@ class StarGateUtil
 		$packet->serverType = "bedrock";
 		self::getClient()->sendPacket($packet);
 	}
+
+	/**
+	 * @param string $serverName
+	 */
+	public static function removeServer(string $serverName): void
+	{
+		$packet = new ManageServerPacket();
+		$packet->action = ManageServerPacket::REMOVE;
+		$packet->serverName = $serverName;
+		self::getClient()->sendPacket($packet);
+	}
 }
