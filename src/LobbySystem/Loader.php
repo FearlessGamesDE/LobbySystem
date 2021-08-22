@@ -38,14 +38,14 @@ class Loader extends PluginBase
 	{
 		self::$instance = $this;
 		self::$serverName = StarGateUtil::getClient()->getClientName();
+		self::$isMaster = self::$serverName === "lobby";
 		TimingManager::load();
 		Output::load();
 		PacketHandler::load();
 		CommandManager::load();
 		ErrorReporter::load();
 		Server::getInstance()->getPluginManager()->registerEvents(new RawLogger(), $this);
-		if (StarGateUtil::getClient()->getClientName() === "lobby") {
-			self::$isMaster = true;
+		if (self::$isMaster) {
 			GamemodeManager::load();
 			QueueManager::load();
 			AreaManager::load();
