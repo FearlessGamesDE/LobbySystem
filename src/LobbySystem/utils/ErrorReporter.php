@@ -3,14 +3,21 @@
 namespace LobbySystem\utils;
 
 use LobbySystem\Loader;
+use pocketmine\scheduler\AsyncTask;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 
 class ErrorReporter
 {
-	public static function send(): void
+	/**
+	 * @param string|null $path
+	 */
+	public static function send(string $path = null): void
 	{
-		$log = file(Server::getInstance()->getDataPath() . "server.log");
+		if ($path === null) {
+			$path = Server::getInstance()->getDataPath();
+		}
+		$log = file($path . "server.log");
 
 		if ($log === false) {
 			return;
@@ -53,17 +60,32 @@ class ErrorReporter
 			$fixedErrors[] = "----------";
 		}
 
-		file_put_contents(Server::getInstance()->getDataPath() . "server.log", []);
+		file_put_contents($path . "server.log", []);
 
 		foreach ($fixedErrors as $error) {
-			DiscordWebhook::send(Output::translate("errorURL"), $error);
+			DiscordWebhook::send(Output::translate("errorURL"), $error, [], "", false);
 		}
 	}
 
 	public static function load(): void
 	{
 		Loader::getInstance()->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
-			self::send();
+			Server::getInstance()->getAsyncPool()->submitTask(new class(Server::getInstance()->getDataPath()) extends AsyncTask {
+				/**
+				 * @var string
+				 */
+				private $path;
+
+				public function __construct(string $path)
+				{
+					$this->path = $path;
+				}
+
+				public function onRun(): void
+				{
+					ErrorReporter::send($this->path);
+				}
+			});
 		}), 20 * 60);
 	}
 }
