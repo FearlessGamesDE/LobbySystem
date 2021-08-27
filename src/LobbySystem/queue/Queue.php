@@ -17,7 +17,6 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;
-use ServerHandler\Docker\DockerContainerInstance;
 
 class Queue
 {
