@@ -77,7 +77,7 @@ class AreaListener implements Listener
 	public function onPlace(BlockPlaceEvent $event): void
 	{
 		foreach (AreaManager::getAreas() as $area) {
-			if ($area->containsPlayer($event->getPlayer()) && $area->getBoundingBox()->isVectorInside($event->getBlock()->getPos())) {
+			if ($area->containsPlayer($event->getPlayer()) && $area->getBoundingBox()->isVectorInside($event->getBlock()->getPosition())) {
 				if (!$area->onPlace($event->getPlayer(), $event->getBlock())) {
 					$event->cancel();
 				}
@@ -94,7 +94,7 @@ class AreaListener implements Listener
 	public function onBreak(BlockBreakEvent $event): void
 	{
 		foreach (AreaManager::getAreas() as $area) {
-			if ($area->containsPlayer($event->getPlayer()) && $area->getBoundingBox()->isVectorInside($event->getBlock()->getPos())) {
+			if ($area->containsPlayer($event->getPlayer()) && $area->getBoundingBox()->isVectorInside($event->getBlock()->getPosition())) {
 				if (!$area->onBreak($event->getPlayer(), $event->getBlock())) {
 					$event->cancel();
 				}

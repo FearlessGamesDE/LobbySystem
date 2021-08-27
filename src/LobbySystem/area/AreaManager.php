@@ -52,8 +52,8 @@ class AreaManager
 					$minZ = (int) $z2;
 					$maxZ = (int) $z1;
 				}
-				self::$places[$tile->getText()->getLine(1)] = [$tile->getPos(), new AxisAlignedBB($minX, $minY, $minZ, $maxX, $maxY, $maxZ)];
-				LobbyWorld::get()->setBlock($tile->getPos(), VanillaBlocks::AIR());
+				self::$places[$tile->getText()->getLine(1)] = [$tile->getPosition(), new AxisAlignedBB($minX, $minY, $minZ, $maxX, $maxY, $maxZ)];
+				LobbyWorld::get()->setBlock($tile->getPosition(), VanillaBlocks::AIR());
 			}
 		}
 	}
