@@ -21,10 +21,10 @@ class ErrorReporter
 
 		foreach ($log as $line) {
 			if (strpos($line, "CRITICAL") !== false) {
-				$errors[] = [];
-				$errors[array_key_last($errors)][] = $line;
-				$current = true;
-			} elseif ($current && strpos($line, "DEBUG") !== false) {
+				if (!$current) {
+					$current = true;
+					$errors[] = [];
+				}
 				$errors[array_key_last($errors)][] = $line;
 			} else {
 				$current = false;
