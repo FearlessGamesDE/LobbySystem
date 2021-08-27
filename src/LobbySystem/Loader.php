@@ -12,6 +12,7 @@ use LobbySystem\queue\QueueManager;
 use LobbySystem\utils\ErrorReporter;
 use LobbySystem\utils\Output;
 use LobbySystem\utils\RawLogger;
+use LobbySystem\utils\SecurityChecks;
 use LobbySystem\utils\StarGateUtil;
 use LobbySystem\utils\TimingManager;
 use pocketmine\plugin\PluginBase;
@@ -39,6 +40,7 @@ class Loader extends PluginBase
 		self::$instance = $this;
 		self::$serverName = StarGateUtil::getClient()->getClientName();
 		self::$isMaster = self::$serverName === "lobby";
+		SecurityChecks::checkCompressionStatus();
 		TimingManager::load();
 		Output::load();
 		PacketHandler::load();
