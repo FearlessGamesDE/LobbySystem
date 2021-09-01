@@ -47,7 +47,7 @@ class TimingManager
 			$result = [];
 		}
 		if (is_array($result) && isset($result["id"])) {
-			DiscordWebhook::send(Output::translate("timingURL"), "", [DiscordWebhook::buildEmbed("Timing Record", "", Color::GREEN, $result[1][0]["location"], DiscordWebhook::buildAuthor(Loader::getServerName()), [], [], [], [], time())]);
+			DiscordWebhook::send(Output::translate("timingURL"), "", [DiscordWebhook::buildEmbed("Timing Record", "", Color::GREEN, "https://" . $host . "/?id=" . $result["id"], DiscordWebhook::buildAuthor(Loader::getServerName()), [], [], [], [], time())]);
 		} else {
 			DiscordWebhook::send(Output::translate("timingURL"), "", [DiscordWebhook::buildEmbed("Timing Record Error", (string) $response->getCode(), Color::RED, "", DiscordWebhook::buildAuthor(Loader::getServerName()), [], [], [], [], time())]);
 		}
