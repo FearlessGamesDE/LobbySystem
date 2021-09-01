@@ -57,7 +57,7 @@ class StartServerTask extends AsyncTask
 	{
 		try {
 			ServerHandler::load();
-			$container = DockerContainer::create("pocketmine-mp", "v" . $this->id)->mapPort(20000 + $this->id, "19132/udp")->setVolume("/minecraft/virtual/PocketMine-MP/plugins", "/plugins")->setVolume("/minecraft/virtual/" . $this->gamemode . "/data", "/server/data")->setVolume("/minecraft/virtual/" . $this->gamemode . "/worlds", "/server/worlds")->setVolume("/minecraft/virtual/" . $this->minigame . "/plugins", "/server/plugins")->start();
+			$container = DockerContainer::create("pocketmine-mp", "v" . $this->id)->mapPort(20000 + $this->id, "19132/udp")->setVolume("/minecraft/virtual/PocketMine-MP/plugins", "/plugins")->setVolume("/minecraft/virtual/PocketMine-MP/data", "/data/plugin_data")->setVolume("/minecraft/virtual/" . $this->gamemode . "/data", "/server/data")->setVolume("/minecraft/virtual/" . $this->gamemode . "/worlds", "/server/worlds")->setVolume("/minecraft/virtual/" . $this->minigame . "/plugins", "/server/plugins")->start();
 			$process = $container->execute("echo 'v" . $this->id . "' > /server.txt");
 			if (!$process->isSuccessful()) {
 				throw new ProcessFailedException($process);

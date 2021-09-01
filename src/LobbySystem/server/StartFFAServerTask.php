@@ -47,7 +47,7 @@ class StartFFAServerTask extends AsyncTask
 		try {
 			ServerHandler::load();
 			$this->port = Generator::generateQueueId();
-			$container = DockerContainer::create("pocketmine-mp", "v" . $this->gamemode)->mapPort(20000 + $this->port, "19132/udp")->setVolume("/minecraft/Virtual/PocketMine-MP/plugins", "/plugins")->setVolume("/minecraft/Virtual/" . $this->gamemode, "/server")->start();
+			$container = DockerContainer::create("pocketmine-mp", "v" . $this->gamemode)->mapPort(20000 + $this->port, "19132/udp")->setVolume("/minecraft/Virtual/PocketMine-MP/plugins", "/plugins")->setVolume("/minecraft/virtual/PocketMine-MP/data", "/data/plugin_data")->setVolume("/minecraft/Virtual/" . $this->gamemode, "/server")->start();
 			$process = $container->execute("echo '" . $this->gamemode . "' > /server.txt");
 			if (!$process->isSuccessful()) {
 				throw new ProcessFailedException($process);
