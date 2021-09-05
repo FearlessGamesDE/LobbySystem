@@ -48,8 +48,8 @@ class InitializePacket extends NetworkPacket
 	{
 		$this->putString($this->gamemodeId);
 		$this->putString($this->minigame);
-		$this->putString($this->teamCount);
-		$this->putString($this->teamSize);
+		$this->putInt($this->teamCount);
+		$this->putInt($this->teamSize);
 		$this->putStringArray($this->players);
 		$this->putArray($this->teams, function (array $team): void {
 			$this->putStringArray($team);
