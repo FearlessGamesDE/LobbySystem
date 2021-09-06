@@ -57,6 +57,7 @@ class DiscordWebhook
 					DiscordWebhook::send($this->webhook, $this->message, unserialize($this->embeds), $this->username, false);
 				}
 			});
+			return;
 		}
 
 		$build = ["content" => $message];
