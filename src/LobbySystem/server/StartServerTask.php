@@ -51,7 +51,7 @@ class StartServerTask extends AsyncTask
 
 	/**
 	 * @param int $ex
-	 * @return DockerContainerInstance|Exception
+	 * @return DockerContainerInstance|string
 	 */
 	public function startServer(int $ex = 0)
 	{
@@ -69,7 +69,7 @@ class StartServerTask extends AsyncTask
 			return $container;
 		} catch (Exception $e) {
 			if ($ex >= 3) {
-				return $e;
+				return $e->getMessage();
 			}
 			$this->publishProgress("Error creating Container! Trying again...");
 			$this->id = Generator::generateQueueId();
@@ -83,9 +83,9 @@ class StartServerTask extends AsyncTask
 			StarGateUtil::addServer("v" . $this->id, 20000 + $this->id);
 			ServerPool::get($this->queue)->setServer($this->getResult());
 			Server::getInstance()->getLogger()->info("Created Container v" . $this->id . " on " . (20000 + $this->id) . " in " . round(microtime(true) - $this->start, 3) . "s");
-		} elseif ($this->getResult() instanceof Exception) {
+		} else {
 			Server::getInstance()->getLogger()->critical("Error creating Container! Shutting down...");
-			Server::getInstance()->getLogger()->logException($this->getResult());
+			Server::getInstance()->getLogger()->critical($this->getResult());
 		}
 	}
 

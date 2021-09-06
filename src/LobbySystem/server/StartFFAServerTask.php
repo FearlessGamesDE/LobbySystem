@@ -40,7 +40,7 @@ class StartFFAServerTask extends AsyncTask
 
 	/**
 	 * @param int $ex
-	 * @return DockerContainerInstance|Exception
+	 * @return DockerContainerInstance|string
 	 */
 	public function startServer(int $ex = 0)
 	{
@@ -59,7 +59,7 @@ class StartFFAServerTask extends AsyncTask
 			return $container;
 		} catch (Exception $e) {
 			if ($ex >= 3) {
-				return $e;
+				return $e->getMessage();
 			}
 			$this->publishProgress("Error creating Container! Trying again...");
 			return $this->startServer(++$ex);
@@ -72,9 +72,9 @@ class StartFFAServerTask extends AsyncTask
 			StarGateUtil::addServer($this->gamemode, 20000 + $this->port);
 			ServerPool::get($this->gamemode)->setServer($this->getResult());
 			Server::getInstance()->getLogger()->info("Created Container " . $this->gamemode . " on 20" . $this->port . " in " . round(microtime(true) - $this->start, 3) . "s");
-		} elseif ($this->getResult() instanceof Exception) {
+		} else {
 			Server::getInstance()->getLogger()->critical("Error creating Container! Shutting down...");
-			Server::getInstance()->getLogger()->logException($this->getResult());
+			Server::getInstance()->getLogger()->critical($this->getResult());
 		}
 	}
 
