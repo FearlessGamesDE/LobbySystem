@@ -193,6 +193,8 @@ class Queue
 		if (!isset($this->server) || !$this->ready) {
 			Server::getInstance()->getLogger()->critical("Container not available! Shutting down...");
 			ServerPool::clean($this->id);
+			unset($this->server);
+			$this->players = [];
 			return;
 		}
 		QueueManager::unbind($this);
