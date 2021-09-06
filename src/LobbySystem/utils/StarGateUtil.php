@@ -45,6 +45,9 @@ class StarGateUtil
 	public static function request(NetworkPacket $packet): void
 	{
 		if (Loader::isMaster()) {
+			//TODO: simplify this
+			$packet->encodePayload();
+			$packet->decodePayload();
 			PacketHandler::handle($packet);
 		} else {
 			self::sendTo("lobby", $packet);
