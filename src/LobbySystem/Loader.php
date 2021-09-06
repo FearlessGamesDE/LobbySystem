@@ -51,9 +51,6 @@ class Loader extends PluginBase
 			GamemodeManager::load();
 			QueueManager::load();
 			AreaManager::load();
-		} else {
-			StarGateUtil::request(new ReadyPacket());
-		}
 
 			$this->getScheduler()->scheduleRepeatingTask(new ClosureTask(static function (): void {
 				StarGateUtil::refreshServerInformation();

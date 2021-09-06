@@ -2,6 +2,7 @@
 
 namespace LobbySystem\packets;
 
+use alemiz\sga\events\ClientConnectedEvent;
 use Exception;
 use LobbySystem\gamemode\FreeGamemode;
 use LobbySystem\gamemode\GamemodeManager;
@@ -43,6 +44,7 @@ use pocketmine\event\Listener;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
+use Throwable;
 
 class PacketHandler implements Listener
 {
@@ -81,6 +83,14 @@ class PacketHandler implements Listener
 		}
 
 		Loader::getInstance()->getServer()->getPluginManager()->registerEvents(new self(), Loader::getInstance());
+	}
+
+	/**
+	 * @param ClientConnectedEvent $event
+	 */
+	public function onConnect(ClientConnectedEvent $event): void
+	{
+		StarGateUtil::request(new ReadyPacket());
 	}
 
 	/**
@@ -125,7 +135,10 @@ class PacketHandler implements Listener
 				break;
 			case PacketPool::SERVER_READY:
 				/** @var ReadyPacket $packet */
-				ServerPool::getAddress($packet->serverName)->serverCallback();
+				try {
+					ServerPool::getAddress($packet->serverName)->serverCallback();
+				} catch (Throwable) {
+				}
 				break;
 			case PacketPool::PARTY_REQUEST_INVITE:
 				/** @var InviteRequestPacket $packet */
