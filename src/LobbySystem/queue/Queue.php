@@ -195,6 +195,7 @@ class Queue
 			ServerPool::clean($this->id);
 			unset($this->server);
 			$this->players = [];
+			$this->ticker->cancel();
 			return;
 		}
 		QueueManager::unbind($this);
