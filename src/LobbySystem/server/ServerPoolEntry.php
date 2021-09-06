@@ -106,6 +106,6 @@ class ServerPoolEntry
 	 */
 	public function getServerName(): string
 	{
-		return $this->instance->getName();
+		return isset($this->instance) ? $this->instance->getName() : "null";
 	}
 }
