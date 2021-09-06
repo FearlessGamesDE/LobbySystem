@@ -17,8 +17,9 @@ class WorldLoader
 	{
 		$provider = $world->getProvider();
 		if ($provider instanceof LevelDB) {
-			foreach ($provider->getAllChunks(true, Loader::getInstance()->getLogger()) as $chunk) {
-				foreach ($chunk->getTiles() as $tile) {
+			foreach ($provider->getAllChunks(true, Loader::getInstance()->getLogger()) as $pos => $chunk) {
+				$c = $world->loadChunk($pos[0], $pos[1]);
+				foreach ($c?->getTiles() as $tile) {
 					yield $tile;
 				}
 			}
