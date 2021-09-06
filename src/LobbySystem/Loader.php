@@ -55,9 +55,10 @@ class Loader extends PluginBase
 			StarGateUtil::request(new ReadyPacket());
 		}
 
-		$this->getScheduler()->scheduleRepeatingTask(new ClosureTask(static function (): void {
-			StarGateUtil::refreshServerInformation();
-		}), 40);
+			$this->getScheduler()->scheduleRepeatingTask(new ClosureTask(static function (): void {
+				StarGateUtil::refreshServerInformation();
+			}), 40);
+		}
 	}
 
 	public function onDisable(): void
