@@ -69,8 +69,7 @@ class StartFFAServerTask extends AsyncTask
 	public function onCompletion(): void
 	{
 		if ($this->getResult() instanceof DockerContainerInstance) {
-			StarGateUtil::addServer($this->gamemode, 20000 + $this->port);
-			ServerPool::get($this->gamemode)->setServer($this->getResult());
+			ServerPool::get($this->gamemode)->setServer($this->getResult(), 20000 + $this->port);
 			Server::getInstance()->getLogger()->info("Created Container " . $this->gamemode . " on 20" . $this->port . " in " . round(microtime(true) - $this->start, 3) . "s");
 		} else {
 			Server::getInstance()->getLogger()->critical("Error creating Container! Shutting down...");

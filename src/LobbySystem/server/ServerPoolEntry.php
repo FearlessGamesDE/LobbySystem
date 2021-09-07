@@ -4,6 +4,7 @@ namespace LobbySystem\server;
 
 use LobbySystem\queue\FFAQueue;
 use LobbySystem\queue\Queue;
+use LobbySystem\utils\StarGateUtil;
 use pocketmine\Server;
 use ServerHandler\Docker\DockerContainerInstance;
 
@@ -21,6 +22,10 @@ class ServerPoolEntry
 	 * @var DockerContainerInstance
 	 */
 	private $instance;
+	/**
+	 * @var int
+	 */
+	private $port;
 	/**
 	 * @var bool
 	 */
@@ -54,10 +59,12 @@ class ServerPoolEntry
 
 	/**
 	 * @param DockerContainerInstance $instance
+	 * @param int                     $port
 	 */
-	public function setServer(DockerContainerInstance $instance): void
+	public function setServer(DockerContainerInstance $instance, int $port): void
 	{
 		$this->instance = $instance;
+		$this->port = $port;
 		ServerPool::setAddress($this->id);
 		if ($this->needStop) {
 			$this->instance->stop();
@@ -67,6 +74,10 @@ class ServerPoolEntry
 	public function serverCallback(): void
 	{
 		$this->isStarting = false;
+
+		StarGateUtil::addServer($this->getServerName(), $this->port, "localhost");
+		Server::getInstance()->getLogger()->info("Registered server v" . $this->id . " on " . $this->port);
+
 		if (!$this->needStop) {
 			$this->queue->ready();
 		}

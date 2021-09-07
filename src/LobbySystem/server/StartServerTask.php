@@ -80,8 +80,7 @@ class StartServerTask extends AsyncTask
 	public function onCompletion(): void
 	{
 		if ($this->getResult() instanceof DockerContainerInstance) {
-			StarGateUtil::addServer("v" . $this->id, 20000 + $this->id);
-			ServerPool::get($this->queue)->setServer($this->getResult());
+			ServerPool::get($this->queue)->setServer($this->getResult(), 20000 + $this->id);
 			Server::getInstance()->getLogger()->info("Created Container v" . $this->id . " on " . (20000 + $this->id) . " in " . round(microtime(true) - $this->start, 3) . "s");
 		} else {
 			Server::getInstance()->getLogger()->critical("Error creating Container! Shutting down...");
