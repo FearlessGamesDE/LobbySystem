@@ -31,7 +31,7 @@ class ChatPacket extends NetworkPacket
 	public function encodePayload(): void
 	{
 		$this->putString(PlayerCache::get($this->player));
-		$this->putString(str_replace("!", "{:SIGN_SHOUT:}", $this->message));
+		$this->putString($this->message);
 		$this->putStringArray(PlayerCache::getRecursive($this->party));
 	}
 
