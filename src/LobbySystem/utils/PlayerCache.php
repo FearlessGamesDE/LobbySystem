@@ -34,6 +34,7 @@ class PlayerCache
 				}
 			}
 		}
+		self::$cache = array_combine(array_map(static function (string $p): string { return strtolower($p); }, $players), $players);
 	}
 
 	/**
