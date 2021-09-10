@@ -79,7 +79,7 @@ class StarGateUtil
 	public static function serverListCallback(array $servers): void
 	{
 		self::$servers = $servers;
-		if (!self::$init) {
+		if (!self::$init && Loader::isMaster()) {
 			self::$init = true;
 			self::distribute(new EnablePacket());
 		}
