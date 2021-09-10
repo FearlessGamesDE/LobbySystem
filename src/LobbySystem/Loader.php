@@ -10,7 +10,9 @@ use LobbySystem\packets\PacketHandler;
 use LobbySystem\packets\server\ReadyPacket;
 use LobbySystem\queue\QueueManager;
 use LobbySystem\utils\ErrorReporter;
+use LobbySystem\utils\InternalInformation;
 use LobbySystem\utils\Output;
+use LobbySystem\utils\PlayerHandler;
 use LobbySystem\utils\RawLogger;
 use LobbySystem\utils\SecurityChecks;
 use LobbySystem\utils\StarGateUtil;
@@ -46,7 +48,9 @@ class Loader extends PluginBase
 		PacketHandler::load();
 		CommandManager::load();
 		ErrorReporter::load();
+		InternalInformation::init();
 		Server::getInstance()->getPluginManager()->registerEvents(new RawLogger(), $this);
+		Server::getInstance()->getPluginManager()->registerEvents(new PlayerHandler(), $this);
 		if (self::$isMaster) {
 			GamemodeManager::load();
 			QueueManager::load();

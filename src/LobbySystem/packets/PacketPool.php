@@ -40,4 +40,6 @@ class PacketPool
 	public const PARTY_INFO_WARP = 0x33;
 	public const PARTY_REQUEST_CHAT = 0x34;
 	public const PARTY_INFO_CHAT = 0x35;
+	public const PARTY_REQUEST_FORCE = 0x36;
+	public const PARTY_INFO_OFFLINE = 0x37;
 }

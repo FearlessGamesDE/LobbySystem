@@ -3,7 +3,7 @@ main: LobbySystem\Loader
 version: 1.0.0
 api: 4.0.0
 author: platz1de
-depend: StarGate-Atlantis
+depend: [ StarGate-Atlantis, StatAPI ]
 description: FearlessGames LobbySystem
 permissions:
   lobbysystem.command.start:

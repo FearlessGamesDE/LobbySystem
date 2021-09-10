@@ -6,37 +6,31 @@ use LobbySystem\packets\NetworkPacket;
 use LobbySystem\packets\PacketPool;
 use LobbySystem\utils\PlayerCache;
 
-class PartyJoinPacket extends NetworkPacket
+class OfflinePacket extends NetworkPacket
 {
 	/**
 	 * @var string
 	 */
 	public $player;
 	/**
-	 * @var bool
+	 * @var string
 	 */
-	public $isForced;
-	/**
-	 * @var string[]
-	 */
-	public $party;
+	public $requester;
 
 	public function decodePayload(): void
 	{
 		$this->player = $this->getString();
-		$this->isForced = $this->getBool();
-		$this->party = $this->getStringArray();
+		$this->requester = $this->getString();
 	}
 
 	public function encodePayload(): void
 	{
 		$this->putString(PlayerCache::get($this->player));
-		$this->putBool($this->isForced);
-		$this->putStringArray(PlayerCache::getRecursive($this->party));
+		$this->putString(PlayerCache::get($this->requester));
 	}
 
 	public function getPacketId(): int
 	{
-		return PacketPool::PARTY_INFO_JOIN;
+		return PacketPool::PARTY_INFO_OFFLINE;
 	}
 }

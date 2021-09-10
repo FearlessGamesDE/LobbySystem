@@ -4,6 +4,7 @@ namespace LobbySystem\command;
 
 use LobbySystem\packets\party\request\ChatRequestPacket;
 use LobbySystem\packets\party\request\DisbandRequestPacket;
+use LobbySystem\packets\party\request\ForceRequestPacket;
 use LobbySystem\packets\party\request\InviteRequestPacket;
 use LobbySystem\packets\party\request\KickRequestPacket;
 use LobbySystem\packets\party\request\ListRequestPacket;
@@ -11,6 +12,7 @@ use LobbySystem\packets\party\request\PromoteRequestPacket;
 use LobbySystem\packets\party\request\QuitRequestPacket;
 use LobbySystem\packets\party\request\WarpRequestPacket;
 use LobbySystem\utils\Output;
+use LobbySystem\utils\PermissionLevel;
 use LobbySystem\utils\PlayerCache;
 use LobbySystem\utils\StarGateUtil;
 use pocketmine\command\Command;
@@ -46,14 +48,19 @@ class PartyCommand extends Command
 				array_shift($args);
 			default:
 				if (isset($args[0])) {
-					if (PlayerCache::isOnline($args[0])) {
-						Output::send($sender, "not-online", ["{player}" => $args[0]], "party-prefix");
-					} else {
-						$request = new InviteRequestPacket();
-						$request->inviter = $sender->getName();
-						$request->player = $args[0];
-						StarGateUtil::request($request);
-					}
+					$request = new InviteRequestPacket();
+					$request->inviter = $sender->getName();
+					$request->player = $args[0];
+					StarGateUtil::request($request);
+					return;
+				}
+				break;
+			case "force":
+				if (isset($args[1]) && PermissionLevel::canUse($sender->getName(), PermissionLevel::MODERATOR)) {
+					$request = new ForceRequestPacket();
+					$request->inviter = $sender->getName();
+					$request->player = $args[1];
+					StarGateUtil::request($request);
 					return;
 				}
 				break;

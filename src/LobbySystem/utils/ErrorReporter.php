@@ -2,6 +2,7 @@
 
 namespace LobbySystem\utils;
 
+use JsonException;
 use LobbySystem\Loader;
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\scheduler\ClosureTask;
@@ -11,8 +12,9 @@ class ErrorReporter
 {
 	/**
 	 * @param string|null $path
+	 * @throws JsonException
 	 */
-	public static function send(string $path = null): void
+	public static function send(string $path = null, ?string $webhook = null): void
 	{
 		if ($path === null) {
 			$path = Server::getInstance()->getDataPath();
@@ -63,27 +65,33 @@ class ErrorReporter
 		file_put_contents($path . "server.log", []);
 
 		foreach ($fixedErrors as $error) {
-			DiscordWebhook::send(Output::translate("errorURL"), $error, [], "", false);
+			DiscordWebhook::send($webhook ?? Output::translate("errorURL"), $error, [], "", false);
+			usleep(1000); //1ms to send in correct order
 		}
 	}
 
 	public static function load(): void
 	{
 		Loader::getInstance()->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
-			Server::getInstance()->getAsyncPool()->submitTask(new class(Server::getInstance()->getDataPath()) extends AsyncTask {
+			Server::getInstance()->getAsyncPool()->submitTask(new class(Server::getInstance()->getDataPath(), Output::translate("errorURL"),) extends AsyncTask {
 				/**
 				 * @var string
 				 */
 				private $path;
+				/**
+				 * @var string
+				 */
+				private $webhook;
 
-				public function __construct(string $path)
+				public function __construct(string $path, string $webhook)
 				{
 					$this->path = $path;
+					$this->webhook = $webhook;
 				}
 
 				public function onRun(): void
 				{
-					ErrorReporter::send($this->path);
+					ErrorReporter::send($this->path, $this->webhook);
 				}
 			});
 		}), 20 * 60);

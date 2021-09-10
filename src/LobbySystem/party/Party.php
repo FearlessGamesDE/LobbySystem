@@ -47,11 +47,13 @@ class Party
 
 	/**
 	 * @param string $player
+	 * @param bool   $isForced
 	 */
-	public function add(string $player): void
+	public function add(string $player, bool $isForced = true): void
 	{
 		$info = new PartyJoinPacket();
 		$info->player = $player;
+		$info->isForced = $isForced;
 		$info->party = $this->getContents();
 		StarGateUtil::distribute($info);
 		$this->members[$player] = $player;

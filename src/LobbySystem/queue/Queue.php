@@ -11,6 +11,7 @@ use LobbySystem\party\PartyManager;
 use LobbySystem\server\ServerPool;
 use LobbySystem\server\ServerPoolEntry;
 use LobbySystem\utils\Generator;
+use LobbySystem\utils\InternalInformation;
 use LobbySystem\utils\Output;
 use LobbySystem\utils\StarGateUtil;
 use pocketmine\player\Player;
@@ -64,7 +65,7 @@ class Queue
 	 */
 	public function add(Player $player): void
 	{
-		Output::send($this->players, "queue-join-other", ["{player}" => $player->getName(), "{current}" => (string) (count($this->players) + 1), "{max}" => (string) $this->gamemode->getCapacity()]);
+		Output::send($this->players, "queue-join-other", ["{player}" => InternalInformation::getChatPrefix($player->getName()) . $player->getName(), "{current}" => (string) (count($this->players) + 1), "{max}" => (string) $this->gamemode->getCapacity()]);
 		$this->players[$player->getName()] = $player;
 		Output::send($player, "queue-join", ["{game}" => $this->gamemode->getDisplayName(), "{current}" => (string) count($this->players), "{max}" => (string) $this->gamemode->getCapacity()]);
 		if ($this->tick > 10 && count($this->players) === $this->gamemode->getCapacity()) {
@@ -85,7 +86,7 @@ class Queue
 	{
 		Output::send($player, "queue-leave", ["{game}" => $this->gamemode->getDisplayName()]);
 		unset($this->players[$player->getName()]);
-		Output::send($this->players, "queue-leave-other", ["{player}" => $player->getName(), "{current}" => (string) count($this->players), "{max}" => (string) $this->gamemode->getCapacity()]);
+		Output::send($this->players, "queue-leave-other", ["{player}" => InternalInformation::getChatPrefix($player->getName()) . $player->getName(), "{current}" => (string) count($this->players), "{max}" => (string) $this->gamemode->getCapacity()]);
 		if (count($this->players) < $this->gamemode->getMinimum()) {
 			$this->stopServer();
 			if (isset($this->ticker)) {
