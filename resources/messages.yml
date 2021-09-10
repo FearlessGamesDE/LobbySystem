@@ -7,8 +7,6 @@ errorURL: "yourURLHere"
 
 rawLogURL: "yourURLHERE"
 
-avatarURL: "https://fearlessgames.de/assets/icon.jpg"
-
 prefix: "§c[LobbySystem] "
 
 important: "§6---------------------------------------§6\n§8>\n§7> §e{message}§r\n§8>\n§6---------------------------------------§r"

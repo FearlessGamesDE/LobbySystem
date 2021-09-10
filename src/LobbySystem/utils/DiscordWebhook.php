@@ -6,7 +6,6 @@ use JsonException;
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\Server;
 use pocketmine\utils\Internet;
-use pocketmine\utils\InternetException;
 
 class DiscordWebhook
 {
@@ -16,6 +15,7 @@ class DiscordWebhook
 	 * @param array[] $embeds
 	 * @param string  $username
 	 * @param bool    $async
+	 * @throws JsonException
 	 */
 	public static function send(string $webhook, string $message, array $embeds = [], string $username = "", bool $async = true): void
 	{
@@ -68,23 +68,15 @@ class DiscordWebhook
 		if ($username !== "") {
 			$build["username"] = $username;
 		}
-		$build["avatar_url"] = Output::translate("avatarURL");
+		$build["avatar_url"] = "https://fearlessgames.de/assets/icon.jpg";
 
-		try {
-			$json = json_encode($build, JSON_THROW_ON_ERROR);
-		} catch (JsonException $e) {
-			return;
-		}
+		$json = json_encode($build, JSON_THROW_ON_ERROR);
 
-		try {
-			Internet::simpleCurl($webhook, 10, ["Content-Type: application/json"], [
-				CURLOPT_POST => true,
-				CURLOPT_POSTFIELDS => $json,
-				CURLOPT_HEADER => false
-			]);
-		} catch (InternetException $e) {
-			return;
-		}
+		Internet::simpleCurl($webhook, 10, ["Content-Type: application/json"], [
+			CURLOPT_POST => true,
+			CURLOPT_POSTFIELDS => $json,
+			CURLOPT_HEADER => false
+		]);
 	}
 
 	/**
