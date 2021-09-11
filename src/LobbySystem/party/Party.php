@@ -51,6 +51,7 @@ class Party
 	 */
 	public function add(string $player, bool $isForced = true): void
 	{
+		PartyManager::add($this);
 		$info = new PartyJoinPacket();
 		$info->player = $player;
 		$info->isForced = $isForced;
