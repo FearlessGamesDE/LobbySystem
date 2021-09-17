@@ -58,6 +58,7 @@ class Party
 		StarGateUtil::distribute($info);
 		$this->members[$player] = $player;
 		unset($this->invites[$player]);
+		PartyManager::add($this);
 	}
 
 	/**
