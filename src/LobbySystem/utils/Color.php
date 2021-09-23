@@ -1585,4 +1585,6 @@ class Color
 	{
 		return (int) hexdec(str_replace("#", "", $hex));
 	}
+
+	public static function load(): void { }
 }

@@ -9,6 +9,8 @@ use LobbySystem\packets\server\DisablePacket;
 use LobbySystem\packets\PacketHandler;
 use LobbySystem\packets\server\ReadyPacket;
 use LobbySystem\queue\QueueManager;
+use LobbySystem\utils\Color;
+use LobbySystem\utils\DiscordWebhook;
 use LobbySystem\utils\ErrorReporter;
 use LobbySystem\utils\InternalInformation;
 use LobbySystem\utils\Output;
@@ -42,6 +44,8 @@ class Loader extends PluginBase
 		self::$instance = $this;
 		self::$serverName = StarGateUtil::getClient()->getClientName();
 		self::$isMaster = self::$serverName === "lobby";
+		Color::load();
+		DiscordWebhook::load();
 		SecurityChecks::checkCompressionStatus();
 		TimingManager::load();
 		Output::load();
