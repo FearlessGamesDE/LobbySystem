@@ -14,6 +14,7 @@ class PacketPool
 	public const SERVER_PLAY = 0x14;
 	public const SERVER_INITIALIZE = 0x15;
 	public const SERVER_READY = 0x16;
+	public const SERVER_REJOIN_INFORMATION = 0x17;
 
 	/**
 	 * Party 0x120 - 0x14F
