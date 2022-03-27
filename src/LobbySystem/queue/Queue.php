@@ -186,6 +186,7 @@ class Queue
 		if (isset($this->server)) {
 			$this->server->stop();
 			ServerPool::clean($this->server->getId());
+			unset($this->server);
 		}
 	}
 

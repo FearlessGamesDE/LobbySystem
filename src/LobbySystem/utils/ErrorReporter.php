@@ -35,6 +35,8 @@ class ErrorReporter
 					$errors[] = [];
 				}
 				$errors[array_key_last($errors)][] = $line;
+			} elseif (strpos($line, "[Server thread") === false) {
+				$errors[array_key_last($errors)][] = $line;
 			} else {
 				$current = false;
 			}
