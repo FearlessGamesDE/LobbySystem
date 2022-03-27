@@ -194,4 +194,6 @@ class DiscordWebhook
 
 		return $footer;
 	}
+
+	public static function load(): void { }
 }

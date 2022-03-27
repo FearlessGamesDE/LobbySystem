@@ -32,8 +32,8 @@ message-queue-join: "§aYou joined the queue for {game} §f({current}/{max})"
 message-queue-leave: "You left the queue for {game}"
 
 #Args: {player} {current} {max}
-message-queue-join-other: "§e{player} joined the queue §r({current}/{max})"
-message-queue-leave-other: "§e{player} left the queue §r({current}/{max})"
+message-queue-join-other: "{player} §ejoined the queue §r({current}/{max})"
+message-queue-leave-other: "{player} §eleft the queue §r({current}/{max})"
 
 message-not-in-queue: "§cYou need to be in a queue to do this"
 

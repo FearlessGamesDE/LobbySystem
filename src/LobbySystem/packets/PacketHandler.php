@@ -35,8 +35,10 @@ use LobbySystem\packets\server\EnablePacket;
 use LobbySystem\packets\server\PlayPacket;
 use LobbySystem\packets\server\InitializePacket;
 use LobbySystem\packets\server\ReadyPacket;
+use LobbySystem\packets\server\RejoinInformationPacket;
 use LobbySystem\party\PartyManager;
 use LobbySystem\queue\QueueManager;
+use LobbySystem\server\ReconnectHandler;
 use LobbySystem\server\ServerPool;
 use LobbySystem\server\VirtualServer;
 use LobbySystem\utils\InternalInformation;
@@ -62,6 +64,7 @@ class PacketHandler implements Listener
 				new PlayPacket(),
 				new InitializePacket(),
 				new ReadyPacket(),
+				new RejoinInformationPacket(),
 				new InviteRequestPacket(),
 				new InviteExpirePacket(),
 				new InvitePacket(),
@@ -146,6 +149,10 @@ class PacketHandler implements Listener
 					ServerPool::getAddress($packet->serverName)->serverCallback();
 				} catch (Throwable) {
 				}
+				break;
+			case PacketPool::SERVER_REJOIN_INFORMATION:
+				/** @var RejoinInformationPacket $packet */
+				ReconnectHandler::setLocation($packet->player, $packet->serverName);
 				break;
 			case PacketPool::PARTY_REQUEST_INVITE:
 				/** @var InviteRequestPacket $packet */
